@@ -1,0 +1,1795 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Canvas Primer - Example: Using canvas</title>
+    <script type="text/javascript"><!--
+
+var WAITTIME = 20;
+var AITIME = 200;
+
+var DECKHEIGHT = -250.0;
+var SCREENENDX = 524;
+var SCREENENDY = 350;
+
+var PHEIGHT = 200;//pirate height
+var HEADWIDTH = 50;//width of the pirate's head
+
+var PSHOULDER = 150;//distance to top of the shoulder from deck
+var BODYWIDTH = 70;
+var BODYLENGTH = 90;
+
+var ARMLENGTH = 90;
+var ARMWIDTH = 20;
+
+var LEGLENGTH = 100;//some length will be covered by body
+var LEGWIDTH = 26;
+
+var SWORDLENGTH = 130;
+var SWORDWIDTH = 26;
+
+var CHESTHEIGHT = 100.0;
+var CHESTWIDTH = 200.0;
+
+function reflect(context)
+{
+	context.transform(-1, 0, 0, 1, 0, 0);
+}
+
+function invert(context)
+{
+	context.transform(1, 0, 0, -1, 0, 0);
+}
+
+function gold(context){
+	context.fillStyle = "rgb(185, 126, 2)";
+}
+
+function goldShine(context){
+	context.fillStyle = "rgb(252, 202, 99)";
+}
+
+function epCoatColor(context){
+	context.fillStyle = "rgb(51,51,51)";
+}
+
+function metal(context){
+	context.fillStyle = "rgb(153,153,153)";
+}
+
+function pirateSkin(context){
+//this sets the skin tone of our pirate
+context.fillStyle = "rgb(242, 186, 130)";
+}
+
+function darkRed(context){
+	context.fillStyle = "rgb(148, 40, 29)";
+}
+
+function deepPurple(context){
+	context.fillStyle = "rgb(43, 22, 124)";
+}
+
+function ppCoatColor(context){
+	context.fillStyle = "rgb(186, 15, 48)";//pp's coat's color... a dark maroon, I think
+}
+
+function shipBrown(context){
+//this changes the color to the brown that is the color of the ship
+	context.fillStyle = "rgb(127, 63, 0)";
+}
+
+function darkBrown(context){
+	context.fillStyle = "rgb(63, 31, 0)";
+}
+function pearlColor(context){
+	context.fillStyle = "rgb(253, 253, 230)";
+}
+function jewelColor(context){
+	context.fillStyle = "rgb(17, 11, 147)";
+}
+
+function sword(context)
+{
+	metal(context);
+	//hilt
+	context.beginPath();
+		context.moveTo(0, 0);
+		context.lineTo(2, ARMWIDTH/2);
+		context.lineTo(ARMWIDTH-2, ARMWIDTH/2);
+		context.lineTo(ARMWIDTH, 0);
+	context.fill();
+	//blade
+	context.beginPath();
+		context.moveTo(4,ARMWIDTH/2);
+		context.lineTo(4, SWORDLENGTH);
+		context.lineTo(SWORDWIDTH, 2*SWORDLENGTH/3);
+		context.lineTo( 10, ARMWIDTH/2);
+	context.fill();
+	context.strokeStyle = "rgb(0,0,0)";
+	context.beginPath();
+		context.moveTo(0, 0);
+		context.lineTo(2, ARMWIDTH/2);
+		context.lineTo(ARMWIDTH-2, ARMWIDTH/2);
+		context.lineTo(ARMWIDTH, 0);
+	context.stroke();
+	//blade
+	context.beginPath();
+		context.moveTo(4,ARMWIDTH/2);
+		context.lineTo(4, SWORDLENGTH);
+		context.lineTo(SWORDWIDTH, 2*SWORDLENGTH/3);
+		context.lineTo( 10, ARMWIDTH/2);
+	context.stroke();
+}
+
+function skullFace(context, x){
+	var halfWidth = HEADWIDTH/2;
+	var thirdWidth = HEADWIDTH/3;
+	context.fillStyle = "rgb(255,255,255)";
+	context.beginPath();//basic head shape
+		context.moveTo( 0, halfWidth);
+		context.lineTo( -halfWidth, halfWidth - thirdWidth);
+		context.lineTo( -halfWidth, halfWidth - 2*thirdWidth);
+		context.lineTo( 0, -halfWidth);
+		context.lineTo( halfWidth, halfWidth - 2*thirdWidth);
+		context.lineTo( halfWidth, halfWidth - thirdWidth);
+	context.fill();
+	context.fillStyle = "rgb(0,0,0)";
+	var radius = 5.0;//5.0*x;
+	context.beginPath();//eye socket
+		context.arc(halfWidth/2, halfWidth - thirdWidth, radius, 0, Math.PI*2, true);
+	context.fill();
+	context.beginPath();//eye socket
+		context.arc(-halfWidth/2, halfWidth - thirdWidth, radius, 0, Math.PI*2, true);
+	context.fill();
+	context.beginPath();//nose hole
+		context.arc(0, 0, radius, 0, Math.PI*2, true);
+	context.fill();
+
+	context.strokeStyle = "rgb(0,0,0)";
+	context.beginPath();
+		context.moveTo(-halfWidth/2, -halfWidth/2);
+		context.lineTo(halfWidth/2, -halfWidth/2);
+	context.stroke();
+	context.beginPath();
+		context.moveTo( -halfWidth/2, halfWidth - 2*thirdWidth);
+		context.lineTo( halfWidth/2,  halfWidth - 2*thirdWidth);
+	context.stroke();
+	context.beginPath();
+		context.moveTo(-halfWidth /2, -halfWidth + thirdWidth);
+		context.lineTo(halfWidth/2, -halfWidth + thirdWidth);
+	context.stroke();
+
+	context.beginPath();
+		context.moveTo(-halfWidth/2, -halfWidth/2);
+		context.lineTo(-halfWidth/2, halfWidth - 2*thirdWidth);
+	context.stroke();
+	context.beginPath();
+		context.moveTo(halfWidth/2, -halfWidth/2);
+		context.lineTo(halfWidth/2, halfWidth - 2*thirdWidth);
+	context.stroke();
+	context.beginPath();
+		context.moveTo(-halfWidth/4, -halfWidth/2);
+		context.lineTo(-halfWidth/4, halfWidth - 2*thirdWidth);
+	context.stroke();
+	context.beginPath();
+		context.moveTo(halfWidth/4, -halfWidth/2);
+		context.lineTo(halfWidth/4, halfWidth - 2*thirdWidth);
+	context.stroke();
+	context.beginPath();
+		context.moveTo(0, -halfWidth/2);
+		context.lineTo(0, halfWidth - 2*thirdWidth);
+	context.stroke();
+
+}
+
+function skullAndCrossSwords(context, x){
+	context.translate(0, -50);
+	context.save();
+	context.translate(-20, 0);
+	context.rotate(-0.785398163 );
+	sword(context);
+	context.restore();
+	context.save();
+	reflect(context);
+	context.translate(-20, 0);
+	context.rotate(-0.785398163 );
+	sword(context);
+	context.restore();
+	context.save();
+	context.translate(0, 50);
+	skullFace(context,x);
+	context.restore();
+}
+
+function boot(context){
+    darkBrown(context);
+	context.beginPath();//draws the botton part of the boot
+		context.moveTo(-LEGWIDTH/2, -LEGLENGTH + LEGLENGTH/4);
+		context.lineTo(-LEGWIDTH/2,-LEGLENGTH);
+		context.lineTo( LEGWIDTH/2, -LEGLENGTH);
+		context.lineTo(LEGWIDTH/2, -LEGLENGTH + LEGLENGTH/4);
+	context.fill();
+	context.beginPath();//draws the toe of the boot
+		context.moveTo(0, -LEGLENGTH+10);
+		context.lineTo(0, -LEGLENGTH);
+		context.lineTo(LEGWIDTH, -LEGLENGTH);
+		context.lineTo(LEGWIDTH, -LEGLENGTH+7);
+		context.lineTo(LEGWIDTH-5, -LEGLENGTH+10);
+		context.lineTo(LEGWIDTH, -LEGLENGTH+10);
+	context.fill();
+	context.strokeStyle = "rgb(0,0,0)";
+	context.beginPath();//draws the top of the boot
+		context.moveTo(-LEGWIDTH/2 - 5, -LEGLENGTH + LEGLENGTH/4);
+		context.lineTo(-LEGWIDTH/2 - 5, -LEGLENGTH + LEGLENGTH/4 - 10);
+		context.lineTo( LEGWIDTH/2+5, -LEGLENGTH + LEGLENGTH/4 - 10);
+		context.lineTo( LEGWIDTH/2+5, -LEGLENGTH + LEGLENGTH/4);
+	context.fill();
+}
+
+function leg(context){
+//all pirates wear the same pants, so we draw all legs the same way
+//this routine draws a leg for a pirate in the middle of the screen
+	darkBrown(context);
+	context.beginPath();//draws the quad
+		context.moveTo(-LEGWIDTH/2, 0);
+		context.lineTo(-LEGWIDTH, -LEGLENGTH/4);
+		context.lineTo(-LEGWIDTH/4, -LEGLENGTH/2);
+		context.lineTo(LEGWIDTH, -LEGLENGTH/3);
+		context.lineTo(LEGWIDTH/2, 0);
+	context.fill();
+	context.beginPath();//draws the calf muscle
+		context.moveTo(-LEGWIDTH/4, -LEGLENGTH/2);
+		context.lineTo(-LEGWIDTH/2, -LEGLENGTH + LEGLENGTH/4);
+		context.lineTo(LEGWIDTH/2, -LEGLENGTH + LEGLENGTH/4);
+		context.lineTo(LEGWIDTH, -LEGLENGTH/3);
+	context.fill();
+	boot(context);
+}
+
+
+var deathj = 0;
+var sFactor = 1.0;
+var tFactor = 1.0;
+var shimmer = 0;
+var ppRight;
+var ppLeft;
+var ppSword;
+var treasureCell;//this is the cell where the treasure chest is found.  The cell number is in respect to the world
+var toSwing;//eps get more tired than the pp so they can swing only a quarter as fast as they can move
+var startScreen = false;
+var world = new Array();//9 cell array;
+
+var deathTmr;
+var inDeathFunc = false;
+function deathFunc(){
+	if(inDeathFunc)
+		return;
+	inDeathFunc = true;
+	sFactor = 1.0;
+	deathj = 0;
+	clearInterval(drawTmr);
+	clearInterval(backgroundTmr);
+	clearInterval(AITmr);
+	deathTmr = setInterval(drawDeathFunc, 10);
+}
+
+function drawDeathFunc()
+{
+	if( deathj>100)
+	{
+		clearInterval(deathTmr);
+		return;
+	}
+	// Get the canvas element.
+	var elem = document.getElementById('myCanvas');
+	if (!elem || !elem.getContext) {
+		return;
+	  }
+
+	// Get the canvas 2d context.
+	var context = elem.getContext('2d');
+	if (!context) {
+ 		return;
+	}
+	sFactor *= 1.05;
+	context.save();
+	context.scale(sFactor, sFactor);
+	skullAndCrossSwords(context, sFactor);
+	context.restore();
+
+	deathj++;
+}
+
+var winTmr;
+var inWinFunc = false;
+var winJ = 0;
+function winFunc(){
+	if(inWinFunc)
+		return;
+	inWinFunc = true;
+	sFactor = 1.0;
+	tFactor = 0;
+	winj = 0;
+	clearInterval(drawTmr);
+	clearInterval(backgroundTmr);
+	clearInterval(AITmr);
+	winTmr = setInterval(drawWinFunc, 10);
+}
+
+function drawWinFunc()
+{
+//precondition: current[0] is the treasureCell which is of type 'r'
+//postcondition: a special win animation has been displayed
+	if(winJ >=75)
+		return;
+
+
+	// Get the canvas element.
+	var elem = document.getElementById('myCanvas');
+	if (!elem || !elem.getContext) {
+		return;
+	  }
+
+	// Get the canvas 2d context.
+	var context = elem.getContext('2d');
+	if (!context) {
+ 		return;
+	}
+	clearBackground(context);
+	drawPP(context);
+	context.save();	
+	context.save();
+	context.translate(-current[1].theCell.ppPos() - 1048, 0);
+	deck(context);
+	context.restore();
+	context.translate(-current[1].theCell.ppPos(), 0);//translates 0 1048 to the left, 1 nowhere, and 2 1048 to the right, and all translated by ppPos
+	rightEdge(context);
+	if(winJ<=50){
+		tFactor += 5;
+	}
+	else{
+		sFactor *= 1.3;
+	}
+	context.save();
+	context.translate(0, tFactor);
+	context.scale(sFactor, sFactor);
+	context.save();
+	drawChest(context);
+	context.restore();
+	context.restore();
+	context.restore();
+	winJ++;
+}
+
+
+function jewel(context){
+	jewelColor(context);
+	context.save();
+	context.rotate(45.0*Math.PI/180);
+	//context.fillRect(-8, 8, 8, -8);
+	context.fillRect(-8, -8, 16, 16);
+	context.restore();
+	context.fillStyle = "rgb(255,255,255)";
+	var pointSize;
+	if(shimmer%20 <16)
+		pointSize = 2.0;
+	else
+		pointSize= 3.5;
+	context.fillRect(2, 2, pointSize, pointSize);
+}
+
+function coin(context){
+//this draws a coin that is found in the treasure chest
+	if(shimmer%20 <16)
+		gold(context);
+	else
+		goldShine(context);
+	var pointSize = 10;
+		drawPoint(context, 0, 0, pointSize);
+
+	context.fillStyle = "rgb(0,0,0)";
+	pointSize = 1;
+	drawPoint(context, 0, 3, pointSize);
+	for(var i=-2; i<=2; i++){
+		drawPoint(context, i, 2, pointSize);
+	}
+	drawPoint(context,-3, 1, pointSize);
+	drawPoint(context,0,1, pointSize);
+	drawPoint(context,3,1, pointSize);
+	for(var i=-2; i<=1; i++){
+		drawPoint(context,i, 0, pointSize);
+	}
+	drawPoint(context,0, -1, pointSize);
+	drawPoint(context,2, -1, pointSize);
+	drawPoint(context,-3, -2, pointSize);
+	drawPoint(context,0, -2, pointSize);
+	drawPoint(context,3, -2, pointSize);
+	for(var i= -2; i<=2; i++){
+		drawPoint(context,i, -3, pointSize);
+	}
+	drawPoint(context,0, -4, pointSize);
+}		
+
+function aPearl(context){
+	pearlColor(context);
+	var pointSize = 5;
+	drawPoint(context, 0,0, pointSize);
+	shipBrown(context);//color of the chest
+	pointSize = 1.0;
+	drawPoint(context, -3, 3, pointSize);
+	drawPoint(context,-2, 3, pointSize);
+	drawPoint(context,2, 3, pointSize);
+	drawPoint(context,-3, -1, pointSize);
+	drawPoint(context,-2, -1, pointSize);
+	drawPoint(context,2, -1, pointSize);	
+}
+
+function pearls(context){
+//this makes pearls to hang down from the chest
+	context.save();
+	for(var i=0; i<7; i++){
+		aPearl(context);
+		context.translate(0, -5);
+	}
+	for(var i=0; i<3; i++){
+		aPearl(context);
+		context.translate(5, -5);
+	}
+	aPearl(context);
+	context.translate(5, 0);
+	for(var i=0; i<3; i++){
+		aPearl(context);
+		context.translate(5, 5);
+	}
+	for(var i=0; i<7; i++){
+		aPearl(context);
+		context.translate(0, 5);
+	}
+	context.restore();
+}
+
+function drawPoint(context, x, y, size)
+{
+	if(size == 1)
+	{
+		context.fillRect(x,y,size,size);
+	}
+	else{
+		context.beginPath();
+			context.arc(x,y,size, 0, Math.PI*2, true);
+		context.fill();
+	}
+}
+
+function ppHead(context){
+	pirateSkin(context);
+	var halfWidth = HEADWIDTH/2;
+	var thirdWidth = HEADWIDTH/3;
+	context.beginPath();//basic head shape
+		context.moveTo(0, PHEIGHT);
+		context.lineTo(0 - halfWidth, PHEIGHT - thirdWidth);
+		context.lineTo(0 - halfWidth, PHEIGHT - 2*thirdWidth);
+		context.lineTo(0, (PHEIGHT + PSHOULDER)/2);
+		context.lineTo(0 + halfWidth, PHEIGHT - 2*thirdWidth);
+		context.lineTo(0 + halfWidth, PHEIGHT - thirdWidth);
+	context.fill();
+	context.beginPath();//nose
+		context.moveTo(halfWidth, PHEIGHT - thirdWidth -thirdWidth/5);
+		context.lineTo(halfWidth, PHEIGHT - thirdWidth -2*thirdWidth/3);
+		context.lineTo(halfWidth + 7, PHEIGHT - thirdWidth -2*thirdWidth/3);
+		context.lineTo(halfWidth + 7, PHEIGHT - thirdWidth -3*thirdWidth/5);
+	context.fill();
+	darkRed(context);
+	context.beginPath();//hair
+		context.moveTo(0, PHEIGHT);
+		context.lineTo(0 - halfWidth, PHEIGHT - thirdWidth);
+		context.lineTo(-5*halfWidth/4, PSHOULDER+5);
+        	context.lineTo(-halfWidth, PSHOULDER - 5);
+		context.lineTo(0, (PHEIGHT + PSHOULDER)/2);
+	context.fill();
+	context.beginPath();//beard
+		context.moveTo(0, (PHEIGHT + PSHOULDER)/2);
+		context.lineTo(-18, PSHOULDER +8);
+		context.lineTo(halfWidth, PSHOULDER +5);
+		context.lineTo(0 + halfWidth, PHEIGHT - 2*thirdWidth);
+	context.fill();
+	drawPoint(context,halfWidth-3, PHEIGHT - thirdWidth+3, 4);
+	drawPoint(context, halfWidth-5, PHEIGHT - thirdWidth+3, 4);
+	drawPoint(context, halfWidth-9, PHEIGHT - thirdWidth+3, 4);
+	deepPurple(context);
+	context.beginPath();//hat top part
+		context.moveTo(-halfWidth/2, PHEIGHT+ARMWIDTH-5);
+		context.lineTo(-halfWidth, PHEIGHT -10);
+		context.lineTo(10, PHEIGHT-8);
+		context.lineTo(halfWidth/2, PHEIGHT+ARMWIDTH-8);
+	context.fill();
+	context.strokeStyle = "rbg(0,0,0)";
+	context.beginPath();//hat top part
+		context.moveTo(-halfWidth/2, PHEIGHT+ARMWIDTH-5);
+		context.lineTo(-halfWidth, PHEIGHT -10);
+		context.lineTo(10, PHEIGHT-8);
+		context.lineTo(halfWidth/2, PHEIGHT+ARMWIDTH-8);
+	context.stroke();
+	context.strokeStyle = "rgb(255,255,255)";//feathers should be white
+	context.beginPath();
+		context.moveTo(-halfWidth/2, PHEIGHT -10);
+		context.lineTo(-halfWidth - ARMWIDTH, PHEIGHT +ARMWIDTH -5);
+		context.lineTo(-halfWidth -2.5*ARMWIDTH, PHEIGHT +ARMWIDTH/2);
+	context.stroke();
+	context.fillStyle = "rgb(255,255,255)";
+	//use points to make the feather seem more jagged
+	drawPoint(context, -halfWidth -2.5*ARMWIDTH+2, PHEIGHT +ARMWIDTH/2, 3);
+	drawPoint(context, -halfWidth -2.5*ARMWIDTH+5, PHEIGHT +ARMWIDTH/2, 5);
+	drawPoint(context, -halfWidth -2.5*ARMWIDTH+11, PHEIGHT +ARMWIDTH/2+1, 7);
+	drawPoint(context, -halfWidth -2.5*ARMWIDTH+19, PHEIGHT +ARMWIDTH/2+3,10);
+	drawPoint(context, -halfWidth - ARMWIDTH-2, PHEIGHT +ARMWIDTH -6,10);
+	drawPoint(context, -halfWidth - ARMWIDTH+5, PHEIGHT +ARMWIDTH -7,10);	
+	drawPoint(context, -halfWidth - ARMWIDTH+7, PHEIGHT +ARMWIDTH -9,10);
+	//finished with the feather
+	deepPurple(context);
+	context.beginPath();//hat rim
+		context.moveTo(-BODYWIDTH/2, PHEIGHT);
+		context.lineTo(-halfWidth, (PHEIGHT + PSHOULDER)/2);
+		context.lineTo(halfWidth+7, PHEIGHT-4);
+	context.fill();
+	context.strokeStyle = "rgb(0,0,0)";
+	context.beginPath();//hat
+		context.moveTo(-BODYWIDTH/2, PHEIGHT);
+		context.lineTo(-halfWidth, (PHEIGHT + PSHOULDER)/2);
+		context.lineTo(halfWidth+7, PHEIGHT-4);
+	context.stroke();
+	context.fillStyle = "rgb(255,255,255)";
+	//eye white
+	drawPoint(context, halfWidth-3, PHEIGHT - thirdWidth,5);
+	context.fillStyle = "rgb(0,76,0)";//dark green eyes
+	drawPoint(context, halfWidth-2, PHEIGHT - thirdWidth, 3);
+	context.fillStyle = "rgb(0,0,0)";
+	//pupil
+	drawPoint(context, halfWidth-2, PHEIGHT - thirdWidth, 2);
+}
+
+function ppCoat(context){
+//draws the PP's coat
+	ppCoatColor(context);	
+	var halfWidth = BODYWIDTH/2;
+	context.beginPath();
+		context.moveTo(-.5*halfWidth, PSHOULDER);
+		context.lineTo(-halfWidth, 4*PSHOULDER/5);
+		context.lineTo(-halfWidth + 5, 2*PSHOULDER/5);
+		context.lineTo(-halfWidth, PSHOULDER- BODYLENGTH);
+//now the front
+		context.lineTo(halfWidth-5, PSHOULDER- BODYLENGTH);
+		context.lineTo(halfWidth-5, 4*PSHOULDER/5);
+		context.lineTo(.5*halfWidth, PSHOULDER);
+	context.fill();
+}
+
+function arm(context){
+	context.beginPath();
+		context.moveTo(-ARMWIDTH, 0);
+		context.lineTo(-3*ARMWIDTH/2, -ARMLENGTH/5);
+		context.lineTo(-3*ARMWIDTH/2+4, -ARMLENGTH/5-4);
+		context.lineTo(-3*ARMWIDTH/2, -ARMLENGTH/5-8);
+		context.lineTo( -3*ARMWIDTH/2, -2*ARMLENGTH/5);
+		context.lineTo(-ARMWIDTH, -ARMLENGTH+ARMWIDTH);
+		context.lineTo(0, -ARMLENGTH);
+		context.lineTo(-ARMWIDTH/2, -2*ARMLENGTH/5+4);
+		context.lineTo(0+4, -ARMLENGTH/5);
+		context.lineTo(0, 0);
+	context.fill();
+	context.strokeStyle = "rgb(0,0,0)";
+	context.beginPath();
+		context.moveTo(-ARMWIDTH, 0);
+		context.lineTo(-3*ARMWIDTH/2, -ARMLENGTH/5);
+		context.lineTo(-3*ARMWIDTH/2+4, -ARMLENGTH/5-4);
+		context.lineTo(-3*ARMWIDTH/2, -ARMLENGTH/5-8);
+		context.lineTo( -3*ARMWIDTH/2, -2*ARMLENGTH/5);
+		context.lineTo(-ARMWIDTH, -ARMLENGTH+ARMWIDTH);
+		context.lineTo(0, -ARMLENGTH);
+		context.lineTo(-ARMWIDTH/2, -2*ARMLENGTH/5+4);
+		context.lineTo(0+4, -ARMLENGTH/5);
+		context.lineTo(0, 0);
+	context.stroke();
+	context.save();
+	context.translate(0, -ARMLENGTH+ARMWIDTH);
+	context.rotate(-1.57079633);
+	sword(context);
+	context.restore();
+	pirateSkin(context);
+//	context.fillRect(-ARMWIDTH, -ARMLENGTH + ARMWIDTH, ARMWIDTH, ARMWIDTH);
+	context.fillRect(-ARMWIDTH, -ARMLENGTH, ARMWIDTH, ARMWIDTH);
+		
+}
+
+function ppArm(context){
+	ppCoatColor(context);
+	arm(context);
+}
+
+
+function epArm(context){
+	epCoatColor(context);
+	arm(context);
+}
+
+function epHead(context){
+	pirateSkin(context);
+	var halfWidth = HEADWIDTH/2;
+	var thirdWidth = HEADWIDTH/3;
+	context.beginPath();//basic head shape
+		context.moveTo(0, PHEIGHT);
+		context.lineTo(0 - halfWidth, PHEIGHT - thirdWidth);
+		context.lineTo(0 - halfWidth, PHEIGHT - 2*thirdWidth);
+		context.lineTo(0, PSHOULDER);
+		context.lineTo(0 + halfWidth, PHEIGHT - 2*thirdWidth);
+		context.lineTo(0 + halfWidth, PHEIGHT - thirdWidth);
+	context.fill();
+	context.beginPath();//nose
+		context.moveTo(halfWidth, PHEIGHT - thirdWidth -thirdWidth/5);
+		context.lineTo(halfWidth, PHEIGHT - thirdWidth -2*thirdWidth/3);
+		context.lineTo(halfWidth + 7, PHEIGHT - thirdWidth -2*thirdWidth/3);
+		context.lineTo(halfWidth + 7, PHEIGHT - thirdWidth -3*thirdWidth/5);
+	context.fill();
+	context.fillStyle = "rgb(255, 0,0)";
+	context.beginPath();//bandana/mask
+		context.moveTo(0, PHEIGHT);
+		context.lineTo(-halfWidth/2, PHEIGHT );
+		context.lineTo(-halfWidth, PHEIGHT - thirdWidth);
+		context.lineTo( halfWidth, PHEIGHT - thirdWidth);
+		context.lineTo(halfWidth/2, PHEIGHT);
+	context.fill();
+	context.beginPath();//ties for bandana/mask
+		context.moveTo(-halfWidth+7, PHEIGHT - thirdWidth +7);
+		context.lineTo(-halfWidth-4, PHEIGHT - thirdWidth +9);
+		context.lineTo(-halfWidth, PHEIGHT - thirdWidth);
+	context.fill();
+	context.beginPath();//ties for bandana/mask
+		context.moveTo(-halfWidth, PHEIGHT - thirdWidth+5);
+		context.lineTo(-halfWidth-10, PHEIGHT - thirdWidth);
+		context.lineTo(-halfWidth, PHEIGHT - thirdWidth );
+	context.fill();
+	context.strokeStyle = "rgb(0,0,0)";
+	context.beginPath();
+		context.moveTo(0, PHEIGHT);
+		context.lineTo(-halfWidth/2, PHEIGHT );
+		context.lineTo(-halfWidth, PHEIGHT - thirdWidth);
+		context.lineTo( halfWidth, PHEIGHT - thirdWidth);
+		context.lineTo(halfWidth/2, PHEIGHT);
+	context.stroke();
+	darkRed(context);
+	var pointSize = 4.0;
+	//eyebrows
+		drawPoint(context, halfWidth-3, PHEIGHT - thirdWidth+3, pointSize);
+		drawPoint(context, halfWidth-5, PHEIGHT - thirdWidth+3, pointSize);
+		drawPoint(context, halfWidth-9, PHEIGHT - thirdWidth+3, pointSize);
+	context.fillStyle = "rgb(255,255,255)";
+	pointSize = 5.0;
+	//eye white
+		drawPoint(context, halfWidth-3, PHEIGHT - thirdWidth, pointSize);
+	context.fillStyle = "rgb(76,38,0)";//dark brown eyes
+	pointSize = 3.0;
+	//eye white
+		drawPoint(context, halfWidth-2, PHEIGHT - thirdWidth, pointSize);
+	context.fillStyle = "rgb(0,0,0)";
+	pointSize = 2.0;
+	//pupil
+		drawPoint(context, halfWidth-2, PHEIGHT - thirdWidth, pointSize);
+}
+
+
+function epCoat(context){
+//draws the PP's coat
+	epCoatColor(context);	
+	var halfWidth = BODYWIDTH/2;
+	context.beginPath();
+		context.moveTo(-.5*halfWidth, PSHOULDER);
+		context.lineTo(-halfWidth, 4*PSHOULDER/5);
+		context.lineTo(-halfWidth + 5, 2*PSHOULDER/5);
+		context.lineTo(-halfWidth, PSHOULDER- BODYLENGTH);
+//now the front
+		context.lineTo(halfWidth-5, PSHOULDER- BODYLENGTH);
+		context.lineTo(halfWidth-5, 4*PSHOULDER/5);
+		context.lineTo(.5*halfWidth, PSHOULDER);
+	context.fill();
+}
+
+function drawEP(context, cellNum, place){
+//precondition: current[cellNum] has an ep in place
+//postcondition: draws EP at 0 to buffer
+//notes: some shapes will be partially covered, so these are drawn first with
+//the topmost shapes drawn last
+//draw the neck
+	context.save();
+	pirateSkin(context);
+	context.translate(0, DECKHEIGHT);
+	context.rotate(current[cellNum].theCell.eps[place].bodyAngle() );//will only change on hit
+	context.fillRect(-10, PSHOULDER - 10, 20, 20); 
+	context.restore();
+//draw the legs
+	context.save();
+	context.translate(0, DECKHEIGHT + LEGLENGTH);
+	context.rotate(current[cellNum].theCell.eps[place].rLeg());
+	context.rotate(current[cellNum].theCell.eps[place].bodyAngle() );//will only change on hit
+	leg(context);
+	context.restore();
+	context.save();
+	context.translate(0, DECKHEIGHT + LEGLENGTH, 0);
+	context.rotate(current[cellNum].theCell.eps[place].lLeg());
+	context.rotate(current[cellNum].theCell.eps[place].bodyAngle() );//will only change on hit
+	leg(context);
+	context.restore();
+//draw the body
+	context.save();
+	context.translate(0, DECKHEIGHT);
+	context.rotate(current[cellNum].theCell.eps[place].bodyAngle() );//will only change on hit
+	epCoat(context);
+	context.restore();
+//draw the head
+	context.save();
+	context.translate(0, DECKHEIGHT);
+	context.rotate(current[cellNum].theCell.eps[place].bodyAngle() );//will only change on hit
+	epHead(context);
+	context.restore();
+//draw the arm
+	context.save();
+	context.translate(-HEADWIDTH/4, DECKHEIGHT + PSHOULDER);
+	context.rotate(current[cellNum].theCell.eps[place].armLevel());
+	context.rotate(current[cellNum].theCell.eps[place].bodyAngle() );//will only change on hit
+	epArm(context);
+	context.restore();
+}
+
+var current = new Array();
+
+function pirate(typeChar)
+{
+	this.dead = false; //"I'm not dead yet"
+	this.type = typeChar;
+	this.pos = 0;
+	this.faceRight;//will distinguish between facing right and left
+	if(typeChar == 'p')
+		this.faceRight = true;
+	else
+		this.faceRight = false;
+	this.leg = 20.0;//the right leg and left leg are at symmetric angles
+	this.arm = 90.0;
+	this.body = 0.0;
+	this.legSwing = true;//true is right leg swinging forward
+	this.action = 'a';//s = swing, h = hit, a = base action
+	this.completion = 0;//keeps track of what point in the swinging action we are in
+	this.setPos = function(x)
+	{
+		this.pos = x;
+	};		
+	this.moveR = function(){
+		if(this.action == 'h')//we do not interupt hit action
+			return;
+		if(this.faceRight)
+		{
+			this.pos += 8;
+			if(Math.abs(this.leg)>= 20){
+				this.legSwing = !this.legSwing;
+			}
+			if(this.legSwing){
+				this.leg += 10.0;
+			}
+			else{
+				this.leg -= 10.0;
+			}
+		}
+		else{
+			this.faceRight = true;
+		}
+		this.continueAction();
+	};		
+	this.moveL = function(){
+		if(this.action == 'h')//we do not interupt hit action
+			return;
+		if(!this.faceRight)
+		{
+			this.pos -= 8;
+			if(Math.abs(this.leg)>= 20){
+				this.legSwing = !this.legSwing;
+			}
+			if(this.legSwing){
+				this.leg += 10.0;
+			}
+			else{
+				this.leg -= 10.0;
+			}
+		}
+		else{
+			this.faceRight = false;
+		}
+		this.continueAction();
+	};		
+	this.beHit = function(){
+		this.action = 'h';
+		this.completion = 0;
+		this.continueAction();
+	};
+	this.swing = function(){
+		//will ignore command if already swinging
+		if(this.action == 'a')//we do not interupt hit action
+		{
+			this.action = 's';
+			this.completion = 0;
+			this.continueAction();//changes arm level to fit the action
+		}
+	};
+	this.armLevel = function(){
+		return this.arm*Math.PI/180;//angle the arm is being held at
+	};
+	this.rLeg = function(){//angle of right leg
+		if(this.legSwing){
+			return this.leg*Math.PI/180;
+		}
+		else{
+			return -1*this.leg*Math.PI/180;
+		}
+	};
+	this.lLeg = function(){//angle of left leg
+		if(!this.legSwing){
+			return this.leg*Math.PI/180;
+		}
+		else{
+			return -1*this.leg*Math.PI/180;
+		}
+	};
+	this.faceR = function()
+	{
+		return this.faceRight;
+	};
+	this.continueAction = function(){
+	//continues the motion of swinging the sword
+	//notes: there are 4 basic parts of the swing set apart by 4 different fourths of 100: upswing > 90, 
+	//downswing > 90, downswing < 90, and upswing < 90
+		if(this.completion >=100){
+			this.action = 'a';
+			return;
+		}
+		switch(this.action){
+			case 'a':
+				return;
+				break;
+			case 's':
+				if(this.completion<25)//upswing >90
+					this.arm = 90 + (this.completion/6.25*5.0);
+				if(this.completion>=25&&this.completion<50)//downswing>90
+					this.arm = 110 - ((this.completion-25)/6.25*5.0);
+				if(this.completion>=50&&this.completion<75)//downswing<90
+					this.arm = 90 - ((this.completion-50)/6.25*15.0);
+				if(this.completion>=75&&this.completion<100)//downswing>90
+					this.arm = 30 + ((this.completion-75)/6.25*15.0);
+				this.completion += 6.25;
+				break;
+			case 'h':
+				this.body = (this.completion/20*5.625);//9 degrees is 1/5 of 45
+				this.completion += 12.5;
+				if(this.completion >=100)
+					this.dead = true;
+				break;
+			case 'b':
+				this.arm = 60;
+				this.completion += 6.25;
+			default:;
+		};
+	};
+	this.getPos = function(){
+		return this.pos;
+	};
+	this.bodyAngle = function(){
+		return this.body *Math.PI/180;
+	};
+	this.isDead = function(){
+		return this.dead;
+	};
+	this.isSwing = function(){
+		return this.action == 's';
+	};
+	this.completeLevel = function(){
+		return this.completion;
+	};
+	this.block = function(){
+		//will ignore command if already swinging
+		if(this.action != 'h')//we do not interupt hit action
+		{
+			this.action = 'b';
+			this.completion = 0;
+			this.continueAction();//changes arm level to fit the action
+		}
+	};
+}
+
+function drawChest(context){
+//this function got a little clumsy with the stack, so I eventually 
+//gave up and hacked it a bit.  The wires are hanging out, but it works
+//Update for HTML5- I further hacked this up because I couldn't quite figure out 
+//why my math wasn't working correctly
+	context.save();	
+
+	shipBrown(context);
+	context.fillRect(-CHESTWIDTH/2, DECKHEIGHT, CHESTWIDTH, CHESTHEIGHT);
+	context.fillRect(-CHESTWIDTH/2, DECKHEIGHT+2*CHESTHEIGHT/3 + 33, CHESTWIDTH, 2*CHESTHEIGHT/3);
+	metal(context);
+	context.fillRect(-CHESTWIDTH/4-ARMWIDTH, DECKHEIGHT, ARMWIDTH, CHESTHEIGHT);
+	context.fillRect(CHESTWIDTH/4, DECKHEIGHT, ARMWIDTH, CHESTHEIGHT);
+	context.strokeStyle = "rgb(0,0,0)";
+	context.strokeRect(-CHESTWIDTH/2, DECKHEIGHT, CHESTWIDTH, CHESTHEIGHT);
+	context.strokeRect(-CHESTWIDTH/2, DECKHEIGHT+2*CHESTHEIGHT/3 + 33, CHESTWIDTH, 2*CHESTHEIGHT/3);
+
+	context.translate( 0, DECKHEIGHT + 106);
+	context.translate(-CHESTWIDTH/8 +19, 0);
+	pearls(context);
+	context.restore();
+	context.save();
+	context.translate( 0, DECKHEIGHT + 106);
+	context.translate(-CHESTWIDTH/2 + 10, 0);
+	//context.translate(CHESTWIDTH/3 + 19, 15);//adjusts copy of the location of the rim of the chest
+	pearls(context);
+	context.restore();
+	context.save();
+	context.translate( 0, DECKHEIGHT + 106);
+	context.translate(-CHESTWIDTH/2 + 10, 0);
+	context.translate(3*CHESTWIDTH/4, 5);//adjusts the copy of the location of the rim of the chest
+	pearls(context);
+	context.restore();
+
+	context.save();
+	context.translate( 0, DECKHEIGHT + 106);
+	context.translate(-CHESTWIDTH/2 + 10, 0);
+	for(var i= 0 ; i<CHESTHEIGHT/12/2; i++){		
+		context.save();//pushes the vertical offset
+		context.translate(i*12, 0);//staggers the left side
+		for(var j=0; j<CHESTWIDTH/12-2*i; j++){
+			coin(context);
+			context.translate(12, 0);//prepares to make next coin by changing horizontal offset
+		}
+		context.restore();//pops the horizontal offset
+		context.translate(0, 12);//adds to the vertical offset
+	}
+
+	context.restore();//pops the vertical offset, returning to the copy of the rim of the chest
+	context.save();
+	context.translate( 0, DECKHEIGHT + 106);
+	context.translate(-CHESTWIDTH/2 + 10, 0);
+	
+	context.translate(CHESTWIDTH/2, CHESTHEIGHT/2);//changes the copy of the rim of the chest
+	jewel(context);
+
+	context.restore();
+	context.save();
+	context.translate( 0, DECKHEIGHT + 106);
+	context.translate(-CHESTWIDTH/2 + 10, 0);
+
+	context.translate(CHESTWIDTH/3, 5);//changes the copy of the left side of the rim of the chest
+	jewel(context);
+	context.restore();
+
+}
+
+function deck(context){
+//this routine draws just a regular deck
+	context.save();
+	shipBrown(context);
+	context.fillRect(-SCREENENDX, -SCREENENDY, SCREENENDX*2, 100);
+	context.translate(-SCREENENDX, -SCREENENDY +50);
+	for(var i=0; i<5; i++){
+		metal(context);
+		context.beginPath();
+			context.moveTo(0, 25);
+			context.lineTo(-25/2, 25/2);
+			context.lineTo(-25, 0);
+			context.lineTo(-25/2, -25/2);
+			context.lineTo(0, -25);
+			context.lineTo(25/2, -25/2);
+			context.lineTo(25, 0);
+			context.lineTo(25/2, 25/2);
+		context.fill();
+		epCoatColor(context);
+		context.beginPath();
+			context.moveTo(0, 15);
+			context.lineTo(-15/2, 15/2);
+			context.lineTo(-15, 0);
+			context.lineTo(-15/2, -15/2);
+			context.lineTo(0, -15);
+			context.lineTo(15/2, -15/2);
+			context.lineTo(15, 0);
+			context.lineTo(15/2, 15/2);
+		context.fill();		
+		context.translate(SCREENENDX/2, 0);
+	}
+	context.restore();
+}
+
+function leftEdge(context){
+//this routine draws the left edge of the ship
+	shipBrown(context);
+	context.fillRect(-24, -SCREENENDY, 550, 100);
+	context.beginPath();
+		context.moveTo(-124, DECKHEIGHT);
+		context.lineTo(-24, -SCREENENDY);
+		context.lineTo(-24, DECKHEIGHT);
+	context.fill();
+}
+
+function rightEdge(context){
+//this routine draws the right edge of the ship
+	shipBrown(context);
+	context.fillRect(-SCREENENDX, -SCREENENDY, 550, 100);
+	context.beginPath();
+		context.moveTo(124, DECKHEIGHT);
+		context.lineTo(24, -SCREENENDY);
+		context.lineTo(24, DECKHEIGHT);
+	context.fill();
+	context.save();
+	context.translate(-SCREENENDX, -SCREENENDY +50);
+
+	metal(context);
+	context.beginPath();
+		context.moveTo(0, 25);
+		context.lineTo(-25/2, 25/2);
+		context.lineTo(-25, 0);
+		context.lineTo(-25/2, -25/2);
+		context.lineTo(0, -25);
+		context.lineTo(25/2, -25/2);
+		context.lineTo(25, 0);
+		context.lineTo(25/2, 25/2);
+	context.fill();
+	epCoatColor(context);
+	context.beginPath();
+		context.moveTo(0, 15);
+		context.lineTo(-15/2, 15/2);
+		context.lineTo(-15, 0);
+		context.lineTo(-15/2, -15/2);
+		context.lineTo(0, -15);
+		context.lineTo(15/2, -15/2);
+		context.lineTo(15, 0);
+		context.lineTo(15/2, 15/2);
+	context.fill();		
+	context.restore();
+	context.save();
+	context.translate(124, DECKHEIGHT-20, 0);
+	context.rotate( -0.785398163);
+	skeleton(context);
+	context.restore();
+
+}
+
+function mast(context){
+//this routine draws a mast in the middle of the screen
+	shipBrown(context);
+	context.fillRect(-24, -SCREENENDY, 48, 700);
+	context.fillStyle = "rgb(0, 0, 0)";
+	context.beginPath();
+		context.moveTo(-24, DECKHEIGHT);
+		context.lineTo(24, DECKHEIGHT);
+	context.stroke();
+	darkBrown(context);
+	context.beginPath();
+    		context.moveTo(-4, -SCREENENDY + 640);
+		context.lineTo(-4, -SCREENENDY + 600);
+	context.stroke();
+	context.beginPath();
+		context.moveTo(6, -SCREENENDY + 300);
+		context.lineTo(6, -SCREENENDY + 280);
+	context.stroke();
+	context.beginPath();
+		context.moveTo(1, -SCREENENDY + 190);
+		context.lineTo(1, -SCREENENDY + 225);
+	context.stroke();
+	context.beginPath();
+		context.moveTo(16, -SCREENENDY + 480);
+		context.lineTo(16, -SCREENENDY + 440);
+	context.stroke();
+	context.beginPath();
+		context.moveTo(11, -SCREENENDY + 570);
+		context.lineTo(11, -SCREENENDY + 540);
+	context.stroke();
+	context.beginPath();
+		context.moveTo(-17, -SCREENENDY + 190);
+		context.lineTo(-17, -SCREENENDY + 175);
+	context.stroke();
+	context.beginPath();
+		context.moveTo(3, -SCREENENDY + 520);
+		context.lineTo(3, -SCREENENDY + 487);
+	context.stroke();
+	context.beginPath();
+		context.moveTo(-14, -SCREENENDY + 390);
+		context.lineTo(-14, -SCREENENDY + 350);
+	context.stroke();
+}
+
+function cell(typeChar)
+{
+	this.type = typeChar;
+	this.pp = null;
+	this.eps = new Array();
+	this.objects = new Array();
+	this.changeType = function(x){
+		this.type = x;
+	};
+	this.theType = function(){
+		return this.type;
+	};
+	this.hasMast = function(){
+		for(var i = 0; i<this.objects.length; i++){
+			if(this.objects[i]=='m')
+				return true;
+		}
+	};
+	this.hasChest = function(){
+		for(var i = 0; i<this.objects.length; i++){
+			if(this.objects[i]=='t')//t for treasure
+				return true;
+		}
+	};
+
+	this.ppPos = function(){
+		return this.pp.getPos();
+	};
+	this.numEP = function(){
+		return this.eps.length;
+	};
+	this.epPos = function(x){
+		return this.eps[x].getPos();
+	};
+	this.addObj = function(x){
+		this.objects[this.objects.length] = x;	
+	};
+	this.addEP = function(){
+		var temp = new pirate('e');
+		this.eps[this.eps.length] = temp;//adds EP to the center of cell
+	};
+	this.setPP = function(loc){
+		if(this.pp == null)
+			this.pp = new pirate('p');
+		this.pp.setPos(loc);
+	};
+	this.receivePP = function(borderingCell){
+	//precondition: borderingCell must contain the pp
+	//postcondition: this cell will contain pp, and the borderingCell will not
+		this.pp = borderingCell.pp;
+		borderingCell.pp = null;
+	};
+	this.setEP = function(num, loc){
+		this.eps[num].setPos(loc);
+	};
+}
+
+function loadStruct(){
+	this.id = 0;
+	this.theCell = new cell();
+}
+
+function drawPP(context){
+//precondition: current has a pp
+//postcondition: pp is drawn to the buffer
+//other notes: draws PP in the 0 of the screen
+//some shapes will be partially covered, so these are drawn first with
+//the topmost shapes drawn last
+//draw the neck
+	context.save();
+	pirateSkin(context);
+	context.translate(0, DECKHEIGHT);
+	context.rotate(current[1].theCell.pp.bodyAngle());
+	context.fillRect(-10, PSHOULDER - 10, 20, 20); 
+	context.restore();
+//draw the legs
+	context.save();
+	context.translate(0, DECKHEIGHT + LEGLENGTH);
+	context.rotate( current[1].theCell.pp.rLeg());
+	context.rotate(current[1].theCell.pp.bodyAngle() );//will only change on hit
+	leg(context);
+	context.restore();
+	context.save();
+	context.translate(0, DECKHEIGHT + LEGLENGTH);
+	context.rotate( current[1].theCell.pp.lLeg());
+	context.rotate(current[1].theCell.pp.bodyAngle() );//will only change on hit
+	leg(context);
+	context.restore();
+//draw the body
+	context.save();
+	context.translate(0, DECKHEIGHT);
+	context.rotate(current[1].theCell.pp.bodyAngle() );//will only change on hit
+	ppCoat(context);
+	context.restore();
+//draw the head
+	context.save();
+	context.translate(0, DECKHEIGHT);
+	context.rotate(current[1].theCell.pp.bodyAngle() );//will only change on hit
+	ppHead(context);
+	context.restore();
+//draw the arm
+	context.save();
+	context.translate(-HEADWIDTH/4, DECKHEIGHT + PSHOULDER);
+	context.rotate(current[1].theCell.pp.armLevel() );
+	context.rotate(current[1].theCell.pp.bodyAngle()  );//will only change on hit
+	ppArm(context);
+	context.restore();
+}
+
+function skull(context){
+//draws skull for skeleton
+	var halfWidth = HEADWIDTH/2;
+	var thirdWidth = HEADWIDTH/3;
+	context.fillStyle="rgb(255,255,255)";
+	context.beginPath();//basic head shape
+		context.moveTo( 0, halfWidth);
+		context.lineTo( -halfWidth, halfWidth - thirdWidth);
+		context.lineTo( -halfWidth, halfWidth - 2*thirdWidth);
+		context.lineTo( 0, -halfWidth);
+		context.lineTo( halfWidth, halfWidth - 2*thirdWidth);
+		context.lineTo( halfWidth, halfWidth - thirdWidth);
+	context.fill();
+	context.fillStyle = "rgb(0,0,0)";
+	var pointSize = 3.0;
+	//eye socket
+	
+	drawPoint(context,halfWidth-3, halfWidth - thirdWidth, pointSize);
+	drawPoint(context,halfWidth, 0, pointSize); 
+
+	context.beginPath();
+		context.moveTo(halfWidth -5, -halfWidth/2);
+		context.lineTo(halfWidth/2, -halfWidth/2);
+	context.stroke();
+	context.beginPath();
+		context.moveTo( halfWidth, halfWidth - 2*thirdWidth);
+		context.lineTo( halfWidth/2,  halfWidth - 2*thirdWidth);
+	context.stroke();
+	context.beginPath();
+		context.moveTo(halfWidth -5, -halfWidth/2);
+		context.lineTo(halfWidth,  halfWidth - 2*thirdWidth);
+	context.stroke();
+	context.beginPath();
+		context.moveTo(halfWidth/2, -halfWidth/2);
+		context.lineTo(halfWidth/2,  halfWidth - 2*thirdWidth);
+	context.stroke();
+	context.beginPath();
+		context.moveTo(halfWidth -2, -halfWidth + thirdWidth);
+		context.lineTo(halfWidth/2, -halfWidth + thirdWidth);
+	context.stroke();
+	context.beginPath();
+		context.moveTo( 3*halfWidth/5, halfWidth - 2*thirdWidth);
+		context.lineTo( 3*halfWidth/5,  -halfWidth/2);
+	context.stroke();
+	context.beginPath();
+		context.moveTo( 4*halfWidth/5, halfWidth - 2*thirdWidth);
+		context.lineTo( 4*halfWidth/5,  -halfWidth/2);
+	context.stroke();
+	context.beginPath();
+		context.moveTo( 3*halfWidth/4, halfWidth - 2*thirdWidth);
+		context.lineTo( 3*halfWidth/4,  -halfWidth/2);
+	context.stroke();
+}
+
+
+function spine(context){
+//draws the spine
+	context.save();
+	context.fillStyle="rgb(255,255,255)";
+	context.translate(0, (10+2)*5);
+	for(var i=0; i<11; i++){
+		context.fillRect(-5, -5, 10, 10);
+		context.translate(0, -12);
+	}
+	context.restore();
+}
+
+function ribs(context){
+	context.fillStyle="rgb(255,255,255)";
+	context.save();
+	context.translate(-20, 25);
+	for(var i= 0; i<4; i++){
+		context.fillRect(-5, -5, 2*BODYWIDTH/3 + 6, 10);
+		context.beginPath();
+			context.moveTo(2*BODYWIDTH/3,5);
+			context.lineTo(2*BODYWIDTH/3, -5);
+			context.lineTo(2*BODYWIDTH/3+15, 10);
+		context.fill();
+		context.translate(0, -15);
+	}
+	context.restore();
+}
+function boneArm(context){
+	context.save();
+	context.translate(0, 30);
+	context.rotate(2.0943951);
+	context.fillStyle = "rgb(255,255,255)";
+	context.fillRect(-5, -2*ARMLENGTH/5, 10, 2*ARMLENGTH/5);
+	context.fillRect(-5, -2*ARMLENGTH/5 - 12, 10, 10);
+	context.fillRect(-5, -ARMLENGTH, 10, 3*ARMLENGTH/5-14);
+	context.save();
+	context.translate(3, -ARMLENGTH+15);
+	context.rotate(-1.57079633);
+	sword(context);
+	context.restore();
+	context.restore();
+}
+
+function skeleton(context){
+//draws the skeleton that hangs off the front of the ship
+	context.save();
+	context.translate(0, (10+2)*6);
+	skull(context);
+	context.restore();
+	spine(context);
+	ribs(context);
+	boneArm(context);
+}
+
+function clearBackground(context)
+{
+	//draw background
+	context.fillStyle = "rgb(0,0,255)";
+	context.fillRect(-524*3,-350,1048*3,1000*3);
+	//as you've probably figured out, this is not an exact number and any help on how to figure out what my true number should be would be greatly appreciated.  
+}
+
+function drawEvent(){
+  var elem = document.getElementById('myCanvas');
+  if (!elem || !elem.getContext) {
+    return;
+  }
+
+  // Get the canvas 2d context.
+  var context = elem.getContext('2d');
+  if (!context) {
+    return;
+  }
+
+if(startScreen)
+{
+	context.fillStyle = "rgb(0,0,0)";
+	context.fillRect(0,0,1048,700);
+	context.save();
+	context.scale(2.0, 2.0);
+	skullAndCrossSwords(context, 2.0);
+	context.restore();
+
+/*		Opera has no draw text yet, so this won't be done
+glColor3f(1,1,1);
+		glRasterPos2f(-SCREENENDX +50, SCREENENDY-50);
+		char *theString = "Pirates: Press Any Key To Play";
+		for(int i= 0; i<30; i++)
+			glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, theString[i]);
+		glFlush();
+		glutSwapBuffers();
+		return;
+*/
+}
+
+
+	clearBackground(context);
+
+	for(var i=0; i<3; i++){
+		context.save();
+		context.translate(-current[1].theCell.ppPos() + 1048*( i-1 ), 0);//translates 0 1048 to the left, 1 nowhere, and 2 1048 to the right, and all translated by ppPos
+
+		var t1 = current[i];
+		var t2 = t1.theCell;
+		var t3 = t2.theType()
+		switch(current[i].theCell.theType()){
+			case 'l':
+				leftEdge(context);
+				break;
+			case 'd':
+				deck(context);
+				break;
+			case 'r':
+				rightEdge(context);
+				break;
+			default:;
+		};
+		if( current[i].theCell.hasMast() ){
+			mast(context);
+		}		
+		if( current[i].theCell.hasChest() ){
+			context.save();
+			drawChest(context);
+			context.restore();
+	}
+		context.restore();
+
+		if(current[1].theCell.pp != null && !current[1].theCell.pp.isDead()){
+			context.save();
+			if(!current[1].theCell.pp.faceR())
+				reflect(context);
+			drawPP(context);
+			context.restore();
+		}
+		var toBury = new Array();
+		for(var j=0; j<current[i].theCell.numEP(); j++){
+			if(current[i].theCell.eps[j].isDead()){
+				toBury.push(j);//remove pirate from cell
+				continue;//skip this pirate and go on to the next 
+			}
+			context.save();
+			context.translate(-current[1].theCell.ppPos() + 1048*(i-1), 0);//translates 0 1048 to the left, 1 nowhere, and 2 1048 to the right, and all translated by ppPos
+			context.translate(current[i].theCell.epPos(j), 0);
+			if(!current[i].theCell.eps[j].faceR() )
+				reflect(context);//has pirate face correct direction
+			drawEP(context,i,j);
+			context.restore();
+		}
+		for(var x=0; x<toBury.length; x++)//x is much like crossbones, fitting for a pirate's burial
+			current[i].theCell.eps.splice(toBury[x],1);
+	}
+//not needed for canvas
+//	glFlush();
+//	glutSwapBuffers();
+
+
+}
+
+function proximity(cellNum, epNum){
+//precondition: pp is at cell 1
+//postcondition: the distance away from pp is returned
+//notes: for each cell, the distance is distance to edge + distance to pp
+//	alert("ppPos "<<current[1].theCell.ppPos()<<" epPos "<<current[cellNum].theCell.epPos(epNum));
+	var distEdge;
+	switch(cellNum){
+		case 0:
+			distEdge = (2*SCREENENDX - (current[cellNum].theCell.epPos(epNum) + SCREENENDX ) );
+//			alert("0: "<<-(distEdge + (current[1].theCell.ppPos() + SCREENENDX) ));
+			return -(distEdge + (current[1].theCell.ppPos() + SCREENENDX) );//negative number to signify negative direction
+			break;
+		case 1:
+			distEdge = ( current[cellNum].theCell.epPos(epNum) + SCREENENDX) - ( current[1].theCell.ppPos() + SCREENENDX );
+			if(distEdge> 2*SCREENENDX)
+				alert("WOAH, messed up!!! " + distEdge);
+//			cout<<"1: "<< ( ( current[cellNum].theCell.epPos(epNum) + SCREENENDX) - ( current[1].theCell.ppPos() + SCREENENDX ) )<<endl;
+			return ( ( current[cellNum].theCell.epPos(epNum) + SCREENENDX) - ( current[1].theCell.ppPos() + SCREENENDX ) );//sign determines direction
+			break;
+		case 2:
+			distEdge = (current[cellNum].theCell.epPos(epNum) + SCREENENDX);
+//			cout<<"2: "<< (distEdge + (2*SCREENENDX - (current[1].theCell.ppPos() + SCREENENDX) ) )<<endl;
+
+			return (distEdge + (2*SCREENENDX - (current[1].theCell.ppPos() + SCREENENDX) ) );
+			break;
+		default:;
+	};
+	return 0;
+}
+
+function checkPPHit(cellNum, epNum){
+//precondition: pp is in current[1]
+//postcondition: if pp is hit, pp will be set to hit
+	var hitDist = proximity(cellNum, epNum);
+	if(current[cellNum].theCell.eps[epNum].faceR()){//if facing right
+		if( hitDist < 0 && hitDist >= -BODYWIDTH - 2*SWORDLENGTH/3){
+			if(	current[1].theCell.pp.isSwing() ){
+				current[1].theCell.pp.block();
+				current[cellNum].theCell.eps[epNum].block();
+			}
+			else{
+				current[1].theCell.pp.beHit();
+			}
+			return;//we only hit one pirate at a time
+		}
+	}
+	else{//facing left
+		if( hitDist>0 && hitDist <= BODYWIDTH + 2*SWORDLENGTH/3){
+			if(	current[1].theCell.pp.isSwing() ){
+				current[1].theCell.pp.block();
+				current[cellNum].theCell.eps[epNum].block();
+			}
+			else{
+				current[1].theCell.pp.beHit();
+			}
+			return;//we only hit one pirate at a time
+		}
+	}
+}
+
+function checkEPHit(){
+//precondition: pp is in current[1]
+//postcondition: if an ep is hit, that ep will be set to hit
+	if(current[1].theCell.pp.faceR()){
+		for(var i = 0; i<current[1].theCell.numEP(); i++){
+			var distAway = proximity(1, i);
+			if( distAway>0 && distAway <= BODYWIDTH + 2*SWORDLENGTH/3){
+				current[1].theCell.eps[i].beHit();
+				return;//we only hit one pirate at a time
+			}
+		}
+		for(var i= 0; i<current[2].theCell.numEP(); i++){//checks any pirates who may have strayed from their cell
+			var distAway = proximity(2, i);
+			if( distAway>0 && distAway <= BODYWIDTH + 2*SWORDLENGTH/3){
+				current[2].theCell.eps[i].beHit();
+				return;//we only hit one pirate at a time
+			}
+		}
+	}
+	else{//facing left
+		for(var i = 0; i<current[1].theCell.numEP(); i++){
+			var distAway = proximity(1, i);
+			if( distAway<0 && distAway >= -BODYWIDTH - 2*SWORDLENGTH/3){
+				current[1].theCell.eps[i].beHit();
+				return;//we only hit one pirate at a time
+			}
+		}
+		for(var i= 0; i<current[0].theCell.numEP(); i++){//checks any pirates who may have strayed from their cell
+			var distAway = proximity(0, i);
+			if( distAway<0 && distAway >= -BODYWIDTH - 2*SWORDLENGTH/3){
+				current[0].theCell.eps[i].beHit();
+				return;//we only hit one pirate at a time
+			}
+		}
+	}
+}
+
+function moveRight(){
+	if(current[1].theCell.theType() == 'r' && current[1].theCell.ppPos() == 124){
+		return;//we don't want to go off the ship
+	}
+	current[1].theCell.pp.moveR();
+	if(current[1].theCell.ppPos() > SCREENENDX ){//go to next cell to the right
+		current[2].theCell.receivePP(current[1].theCell);
+		if(current[0].theCell.theType() != 'x')
+			world[current[0].id] = current[0].theCell;//updates the world
+		current[0].id = current[1].id;
+		current[0].theCell = current[1].theCell;
+		current[1].id = current[2].id;
+		current[1].theCell = current[2].theCell;
+		current[1].theCell.setPP(-SCREENENDX);//move pp to the far left side of the new cell
+
+		if(current[2].id == world.length -1){
+			var temp = new cell('x');
+			current[2].theCell = temp;
+			current[2].id = world.length;
+		}
+		else{
+			current[2].id++;//we load the next higher cell
+			current[2].theCell = world[ current[2].id ];
+		}
+	}
+	if(current[1].id == treasureCell){
+		if(current[1].theCell.ppPos() >= -CHESTWIDTH/2 && current[1].theCell.ppPos() <= CHESTWIDTH/2){
+			winFunc();
+		}
+	}
+}
+
+function moveLeft(){
+	if(current[1].theCell.theType() == 'l' && current[1].theCell.ppPos() == -124){
+		return;//we don't want to go off the ship
+	}
+	current[1].theCell.pp.moveL();
+	if(current[1].theCell.ppPos() < -SCREENENDX ){//go to the next cell to the left
+		current[0].theCell.receivePP( current[1].theCell );//the cell to the left receives the pp
+		if(current[0].theCell.theType() != 'x')			
+			world[current[2].id] = current[2].theCell;//updates the world
+		current[2].id = current[1].id;
+		current[2].theCell = current[1].theCell;
+		current[1].id = current[0].id;
+		current[1].theCell = current[0].theCell;
+		current[1].theCell.setPP(SCREENENDX);//move pp to the far right side of the new cell
+		if(current[0].id == 0){
+			var temp = new cell('x');//we are unable to get into this cell, as we are stopped by the edge of the screen
+			current[0].theCell = temp;
+			current[0].id = -1;
+		}
+		else{
+			current[0].id--;//we load the next lower cell
+			current[0].theCell = world[ current[0].id ];
+		}
+	}
+	if(current[1].id == treasureCell){
+		if(current[1].theCell.ppPos() >= -CHESTWIDTH/2 && current[1].theCell.ppPos() <= CHESTWIDTH/2){
+			winFunc();
+		}
+	}
+}
+
+function keyEvent(e){
+//precondition: current[1] contains pp
+//postcondition: the keystroke will be interpreted in the graphics correctly
+var KeyID = (window.event) ? event.keyCode : e.keyCode;
+switch(KeyID)
+{
+	case 37:
+	case 97:
+		moveLeft();
+		break;
+	case 39:
+	case 100:
+		moveRight();
+		break;
+	case 32:
+	case 115:
+		current[1].theCell.pp.swing();
+		break;
+};
+}
+
+function backGroundEvent(){
+	if( current[1].theCell.pp.isDead() ){
+		deathFunc();
+	}
+	current[1].theCell.pp.continueAction();
+	if(current[1].theCell.pp.isSwing() && current[1].theCell.pp.completeLevel()>= 60){
+		checkEPHit();
+	}
+	for(var i=0; i < current.length; i++){
+		for(var j=0; j<current[i].theCell.numEP(); j++){
+			current[i].theCell.eps[j].continueAction();
+			if(	current[i].theCell.eps[j].isSwing() && current[i].theCell.eps[j].completeLevel()>=60 ){
+				if( (i == 1) ||/*in pp's cell*/ 
+					(i == 0 && current[0].theCell.eps[j].faceR() && current[0].theCell.epPos(j) + BODYWIDTH/2 + 2*SWORDLENGTH/3 > SCREENENDX)||/*swinging into pp's cell from left cell*/
+					(i == 2 && !current[2].theCell.eps[j].faceR() && current[2].theCell.epPos(j) - BODYWIDTH/2 - 2*SWORDLENGTH/3 < -SCREENENDX)){/*swinging into pp's cell from right cell*/
+					checkPPHit(i, j);
+				}
+			}
+		}
+	}
+	shimmer++;
+//	glutPostRedisplay();
+//	glutTimerFunc(WAITTIME, backGroundEvent, 0);//resets timer to redraw again shortly
+}
+
+function AIEvent(){
+	if(current[1].theCell.pp.isDead() ){
+//		alert("Garr!!! Yer lost to Davey Jones!!!");
+//		exitFunc();
+	}
+	for(var cellNum = 0; cellNum < 3; cellNum++){
+		for(var epNum = 0; epNum < current[cellNum].theCell.numEP(); epNum++){
+			var distAway = proximity(cellNum, epNum);
+			var absDistAway = Math.abs(distAway);
+			if( absDistAway < 2*SWORDLENGTH ){
+				if( toSwing%4==0 ){
+					current[cellNum].theCell.eps[epNum].swing();
+				}
+			}
+			else if( absDistAway <= SCREENENDX ){//move towards pp
+				if(distAway<0){//is in negative direction
+					var toMove = true;
+					for(var i=0; i<current[cellNum].theCell.numEP()&& toMove; i++){//quits early if toMove is changed
+						if(i==epNum)
+							continue;
+						var epAway = proximity(cellNum, i);
+						if(distAway + ARMLENGTH >= epAway - BODYWIDTH/2 && distAway < epAway){
+							toMove = false;
+						}
+
+					}
+					for(var i=0; i<current[1].theCell.numEP() && toMove; i++){//check both your cell and the middle cell, skips out early if 
+						if(i==epNum && cellNum ==1)
+							break;//we have already tested 1 if this is the case
+						var epAway = proximity(1, i);
+						if(distAway + ARMLENGTH >= epAway - BODYWIDTH/2 && distAway<epAway){
+							toMove = false;
+						}
+					}
+					if(toMove)
+						current[cellNum].theCell.eps[epNum].moveR();
+				}
+				else{
+					var toMove = true;
+					for(var i=0; i<current[cellNum].theCell.numEP(); i++){
+						if(i==epNum)
+							continue;
+						var epAway = proximity(cellNum, i);
+						if(distAway - ARMLENGTH <= epAway + BODYWIDTH/2 && distAway >epAway)
+							toMove = false;
+					}
+					for(var i=0; i<current[1].theCell.numEP() && toMove; i++){//check both your cell and the middle cell, skips out early if 
+						if(i==epNum && cellNum ==1)
+							break;//we have already tested 1 if this is the case
+						var epAway = proximity(1, i);
+						if(distAway - ARMLENGTH <= epAway + BODYWIDTH/2 && distAway >epAway)
+							toMove = false;
+					}
+					if(toMove)
+						current[cellNum].theCell.eps[epNum].moveL();
+				}
+			}
+		}
+	}
+	toSwing++;
+//	glutTimerFunc(AITIME, AIEvent, 0);//resets timer to go off again at AITIME
+}
+
+function createWorld(){
+	var numPirates = 20 ;
+	var numCells = 9;
+	for(var i=0; i<numCells; i++)
+	{
+		world[i] = new cell();
+		world[i].changeType('d');
+		if( (i-1)%3 == 0)
+			world[i].addObj('m');
+	}
+	world[0].changeType('l');
+//	world[1].addObj('m');
+//	world[4].addObj('m');
+//	world[7].addObj('m');
+	world[world.length - 1].changeType('r');
+
+	treasureCell = world.length-1;
+	world[treasureCell].addObj('t');//add treasure to ship
+	for(var i=0; i<numPirates; i++){
+		world[Math.floor(Math.random()*numCells)].addEP();//don't put eps where they can be off the ship's deck
+	}
+	for(var i= 0; i<numCells; i++){
+		for(var j= 0; j<world[i].numEP(); j++){
+			if(j%2 ==0)
+				world[i].setEP(j, -SCREENENDX + 3*BODYWIDTH/2*j);
+			else
+				world[i].setEP(j, SCREENENDX - 3*BODYWIDTH/2*j);
+		}
+	}
+}
+
+
+
+var backgroundTmr;
+var drawTmr;
+var AITmr;
+
+window.addEventListener('load', function () {
+	window.addEventListener('keypress', keyEvent, false);
+
+	// Get the canvas element.
+	var elem = document.getElementById('myCanvas');
+	if (!elem || !elem.getContext) {
+		return;
+	}
+
+	// Get the canvas 2d context.
+	var context = elem.getContext('2d');
+	if (!context) {
+		return;
+	}
+
+	alert("Pirates: Click Ok to start.  \r\n A or left to move left.\r\n D or right to move right. \r\n S or space to swing.\r\n Battle the pirates and find the gold!");
+
+
+
+	context.fillStyle = "rgb(0,0,255)";
+	//draw rectangle
+	context.fillRect(0,0,1048,700);
+
+	//context.translate(500,300);
+
+
+	//set up world like gluOrtho2D(-524.0, 524.0, -350.0, 350.0);
+	context.translate(524,350);
+	invert(context);
+	context.save();
+
+	toSwing = 0;
+
+	startScreen = true;
+	toSwing = 0;
+	createWorld();
+	var temp = new loadStruct();
+	temp.id = 0;
+	temp.theCell = world[temp.id];
+	current[0] = temp;
+	temp = new loadStruct();
+	temp.id = 1;
+	temp.theCell = world[temp.id];
+	current[1] = temp;	
+	current[1].theCell.setPP(0);//the pp only exists in the current cells.  he is in the world, but not of the world... okay, I apologize for that one
+	temp = new loadStruct();
+	temp.id = 2;
+	temp.theCell = world[temp.id];
+	current[2] = temp;
+
+	drawTmr = setInterval(drawEvent, 10);
+	backgrounfTmr = setInterval(backGroundEvent, WAITTIME);
+	AITmr = setInterval(AIEvent, AITIME);
+
+
+}, false);
+    // --></script>
+  </head>
+  <body>
+    <p><canvas id="myCanvas" width="1048" height="700">Your browser does not have 
+    support for Canvas.  You should see:
+    <span style="display:block;width:150px;height:100px;background:#00f">&nbsp;</span></canvas></p> 
+  </body>
+</html>
