@@ -3,10 +3,34 @@
   <head>
     <meta charset="utf-8">
     <title>Canvas Primer - Example: Using canvas</title>
-    <script type="text/javascript"><!--
+	<script type="text/javascript">
+		// Function.prototype.bind polyfill
+		if ( !Function.prototype.bind ) {
 
+		  Function.prototype.bind = function( obj ) {
+			var slice = [].slice,
+				args = slice.call(arguments, 1), 
+				self = this, 
+				nop = function () {}, 
+				bound = function () {
+				  return self.apply( this instanceof nop ? this : ( obj || {} ), 
+									  args.concat( slice.call(arguments) ) );    
+				};
+
+			nop.prototype = self.prototype;
+
+			bound.prototype = new nop();
+
+			return bound;
+		  };
+		}
+	</script>
+    <script type="text/javascript"><!--
+(function(){
 var WAITTIME = 20;
-var AITIME = 200;
+var AITIME = 120;
+var DRAWTIME = 60;
+var RECURTIME = 30;
 
 var DECKHEIGHT = -250.0;
 var SCREENENDX = 524;
@@ -247,7 +271,6 @@ function leg(context){
 	boot(context);
 }
 
-
 var deathj = 0;
 var sFactor = 1.0;
 var tFactor = 1.0;
@@ -271,6 +294,7 @@ function deathFunc(){
 	clearInterval(drawTmr);
 	clearInterval(backgroundTmr);
 	clearInterval(AITmr);
+	currEvent = currEvent && currEvent.stop();
 	deathTmr = setInterval(drawDeathFunc, 10);
 }
 
@@ -1583,27 +1607,6 @@ function moveLeft(){
 	}
 }
 
-function keyEvent(e){
-//precondition: current[1] contains pp
-//postcondition: the keystroke will be interpreted in the graphics correctly
-var KeyID = (window.event) ? event.keyCode : e.keyCode;
-switch(KeyID)
-{
-	case 37:
-	case 97:
-		moveLeft();
-		break;
-	case 39:
-	case 100:
-		moveRight();
-		break;
-	case 32:
-	case 115:
-		current[1].theCell.pp.swing();
-		break;
-};
-}
-
 function backGroundEvent(){
 	if( current[1].theCell.pp.isDead() ){
 		deathFunc();
@@ -1723,20 +1726,88 @@ function createWorld(){
 	}
 }
 
-
-
 var backgroundTmr;
 var drawTmr;
 var AITmr;
 
-window.addEventListener('load', function () {
-	window.addEventListener('keypress', keyEvent, false);
+function recurringEvent(repeat) {
+	var timer, 
+	return {
+		start: function(){
+			repeat();
+			timer = setInterval(repeat, RECURTIME);
+		},
+		stop: function(){
+			clearInterval(timer);
+		}
+	};
+}
 
+var currEvent = null;
+
+function keyDown(e){
+//precondition: current[1] contains pp
+//postcondition: the keystroke will be interpreted in the graphics correctly
+	currEvent = currEvent && currEvent.stop();
+	var KeyID = (window.event) ? event.keyCode : e.keyCode;
+	switch(KeyID)
+	{
+		case 37:
+		case 97:
+			currEvent = recurringEvent(moveLeft);
+			currEvent.start();
+			break;
+		case 39:
+		case 100:
+			currEvent = recurringEvent(moveRight);
+			currEvent.start();
+			break;
+		case 32:
+		case 115:
+			currEvent = recurringEvent(function(){current[1].theCell.pp.swing()});
+			currEvent.start();
+			break;
+		default:
+			currEvent = currEvent && currEvent.stop();			
+	};	
+}
+
+function keyUp(){
+	currEvent = currEvent && currEvent.stop();
+}
+
+function touchDown(e){
+	currEvent = currEvent && currEvent.stop();
+	if(e.touches.length === 1) {
+		//move left or right
+		if(e.touches[0].pageX > SCREENENDX /2){
+			currEvent = recurringEvent(moveRight);
+		} else {
+			currEvent = recurringEvent(moveLeft);
+		}
+		currEvent.start();
+	}
+	else if(e.touches.length === 2) {
+		currEvent = recurringEvent(function(){current[1].theCell.pp.swing()});
+		currEvent.start();
+	}
+	e.preventDefault();
+}
+function touchUp(e){
+	currEvent = currEvent && currEvent.stop();
+	e.preventDefault();
+}
+window.addEventListener('load', function () {
+	//window.addEventListener('keypress', keyEvent, false);
+	window.addEventListener('keydown', keyDown, false);
+	window.addEventListener('keyup', keyUp, false);
 	// Get the canvas element.
 	var elem = document.getElementById('myCanvas');
 	if (!elem || !elem.getContext) {
 		return;
 	}
+	elem.addEventListener('touchstart', touchDown, false);
+	elem.addEventListener('touchend', touchUp, false);
 
 	// Get the canvas 2d context.
 	var context = elem.getContext('2d');
@@ -1778,13 +1849,17 @@ window.addEventListener('load', function () {
 	temp.id = 2;
 	temp.theCell = world[temp.id];
 	current[2] = temp;
-
-	drawTmr = setInterval(drawEvent, 10);
+	(function drawAndWait() {
+		drawEvent();
+		setTimeout(drawAndWait, DRAWTIME);
+	}());
 	backgrounfTmr = setInterval(backGroundEvent, WAITTIME);
 	AITmr = setInterval(AIEvent, AITIME);
 
 
 }, false);
+
+}());
     // --></script>
   </head>
   <body>
