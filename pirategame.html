@@ -1384,13 +1384,11 @@ glColor3f(1,1,1);
 */
 }
 
-
 	clearBackground(context);
 
 	for(var i=0; i<3; i++){
 		context.save();
 		context.translate(-current[1].theCell.ppPos() + 1048*( i-1 ), 0);//translates 0 1048 to the left, 1 nowhere, and 2 1048 to the right, and all translated by ppPos
-
 		var t1 = current[i];
 		var t2 = t1.theCell;
 		var t3 = t2.theType()
@@ -1413,9 +1411,8 @@ glColor3f(1,1,1);
 			context.save();
 			drawChest(context);
 			context.restore();
-	}
+		}
 		context.restore();
-
 		if(current[1].theCell.pp != null && !current[1].theCell.pp.isDead()){
 			context.save();
 			if(!current[1].theCell.pp.faceR())
@@ -1423,6 +1420,7 @@ glColor3f(1,1,1);
 			drawPP(context);
 			context.restore();
 		}
+
 		var toBury = new Array();
 		for(var j=0; j<current[i].theCell.numEP(); j++){
 			if(current[i].theCell.eps[j].isDead()){
@@ -1443,7 +1441,6 @@ glColor3f(1,1,1);
 //not needed for canvas
 //	glFlush();
 //	glutSwapBuffers();
-
 
 }
 
