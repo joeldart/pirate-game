@@ -1634,22 +1634,23 @@ function backGroundEvent(){
 
 function AIEvent(){
 	if(current[1].theCell.pp.isDead() ){
-//		alert("Garr!!! Yer lost to Davey Jones!!!");
-//		exitFunc();
+		alert("Garr!!! Yer lost to Davey Jones!!!");
 	}
 	for(var cellNum = 0; cellNum < 3; cellNum++){
-		for(var epNum = 0; epNum < current[cellNum].theCell.numEP(); epNum++){
+		var currCell = current[cellNum].theCell;
+		for(var epNum = 0, len = currCell.numEP(); epNum < len; epNum++){
 			var distAway = proximity(cellNum, epNum);
 			var absDistAway = Math.abs(distAway);
 			if( absDistAway < 2*SWORDLENGTH ){
-				if( toSwing%4==0 ){
-					current[cellNum].theCell.eps[epNum].swing();
+				if( toSwing %4 ==0 ){
+					currCell.eps[epNum].swing();
 				}
 			}
 			else if( absDistAway <= SCREENENDX ){//move towards pp
+				var numEps = currCell.numEP();
 				if(distAway<0){//is in negative direction
 					var toMove = true;
-					for(var i=0; i<current[cellNum].theCell.numEP()&& toMove; i++){//quits early if toMove is changed
+					for(var i=0; i<numEps && toMove; i++){//quits early if toMove is changed
 						if(i==epNum)
 							continue;
 						var epAway = proximity(cellNum, i);
@@ -1658,7 +1659,7 @@ function AIEvent(){
 						}
 
 					}
-					for(var i=0; i<current[1].theCell.numEP() && toMove; i++){//check both your cell and the middle cell, skips out early if 
+					for(var i=0; i<numEps && toMove; i++){//check both your cell and the middle cell, skips out early if 
 						if(i==epNum && cellNum ==1)
 							break;//we have already tested 1 if this is the case
 						var epAway = proximity(1, i);
@@ -1667,18 +1668,18 @@ function AIEvent(){
 						}
 					}
 					if(toMove)
-						current[cellNum].theCell.eps[epNum].moveR();
+						currCell.eps[epNum].moveR();
 				}
 				else{
 					var toMove = true;
-					for(var i=0; i<current[cellNum].theCell.numEP(); i++){
+					for(var i=0; i<numEps; i++){
 						if(i==epNum)
 							continue;
 						var epAway = proximity(cellNum, i);
 						if(distAway - ARMLENGTH <= epAway + BODYWIDTH/2 && distAway >epAway)
 							toMove = false;
 					}
-					for(var i=0; i<current[1].theCell.numEP() && toMove; i++){//check both your cell and the middle cell, skips out early if 
+					for(var i=0; i<numEps && toMove; i++){//check both your cell and the middle cell, skips out early if 
 						if(i==epNum && cellNum ==1)
 							break;//we have already tested 1 if this is the case
 						var epAway = proximity(1, i);
@@ -1686,13 +1687,12 @@ function AIEvent(){
 							toMove = false;
 					}
 					if(toMove)
-						current[cellNum].theCell.eps[epNum].moveL();
+						currCell.eps[epNum].moveL();
 				}
 			}
 		}
 	}
 	toSwing++;
-//	glutTimerFunc(AITIME, AIEvent, 0);//resets timer to go off again at AITIME
 }
 
 function createWorld(){
