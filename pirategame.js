@@ -630,6 +630,31 @@ window.addEventListener('load', function () {
 	AITmr = setInterval(AIEvent, AITIME);
 	window.scrollTo(0,700);
 
+		//prerender
+	(function(){
+		var ppSprite = document.createElement("IMG"),
+		canvas = document.createElement("CANVAS"),
+		context = canvas.getContext('2d');
+		canvas.width = 300 * 3;
+		canvas.height = PHEIGHT + PSHOULDER;
+		var currCell = current[1].theCell;
+		drawPP(context);
+		context.save();
+		context.translate(300, 0);
+		currCell.pp.moveR();
+		drawPP(context);
+		context.translate(300, 0);
+		currCell.pp.moveR();
+		drawPP(context);
+		context.restore();
+		ppSprite.src = canvas.toDataURL();
+		draw.drawPP = function(context) {
+			var currleg = MATH.floor(current[1].theCell.pp.lLeg() / 10);
+			context.drawImage(ppSprite, currleg * 300, 0);
+		};
+	}());
+	
+	
 }, false);
 
 }());

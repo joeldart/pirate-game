@@ -969,5 +969,4 @@ return {
 	drawEP: drawEP,
 	skullAndCrossSwords: skullAndCrossSwords
 };
-
 }());
