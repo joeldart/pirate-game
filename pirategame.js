@@ -1,4 +1,28 @@
+/*global draw, window, current, pirate, loadStruct, cell, invert, reflect */
+var PERFDEBUG = true;
+
+var SCREENENDX = 524;
+var DECKHEIGHT = -250.0;
+var SCREENENDY = 350;
+var PHEIGHT = 200;//pirate height
+var HEADWIDTH = 50;//width of the pirate's head
+var PSHOULDER = 150;//distance to top of the shoulder from deck
+var BODYWIDTH = 70;
+var BODYLENGTH = 90;
+var ARMLENGTH = 90;
+var ARMWIDTH = 20;
+var LEGLENGTH = 100;//some length will be covered by body
+var LEGWIDTH = 26;
+var SWORDLENGTH = 130;
+var SWORDWIDTH = 26;
+var CHESTHEIGHT = 100.0;
+var CHESTWIDTH = 200.0;
+
 (function(){
+var WAITTIME = 20;
+var AITIME = 20;//120;
+var DRAWTIME = 10;//60;
+var RECURTIME = 30;
 var deathj = 0;
 var sFactor = 1.0;
 var tFactor = 1.0;
@@ -9,22 +33,16 @@ var ppSword;
 var treasureCell;//this is the cell where the treasure chest is found.  The cell number is in respect to the world
 var toSwing;//eps get more tired than the pp so they can swing only a quarter as fast as they can move
 var startScreen = false;
-var world = new Array();//9 cell array;
-
+var world = [];//9 cell array;
+var drawTmr;
 var deathTmr;
+var backgroundTmr;
+var AITmr;
 var inDeathFunc = false;
-function deathFunc(){
-	if(inDeathFunc)
-		return;
-	inDeathFunc = true;
-	sFactor = 1.0;
-	deathj = 0;
-	clearInterval(drawTmr);
-	clearInterval(backgroundTmr);
-	clearInterval(AITmr);
-	currEvent = currEvent && currEvent.stop();
-	deathTmr = setInterval(drawDeathFunc, 10);
-}
+var currEvent = null;
+var winTmr;
+var inWinFunc = false;
+var winJ = 0;
 
 function drawDeathFunc()
 {
@@ -42,31 +60,27 @@ function drawDeathFunc()
 	// Get the canvas 2d context.
 	var context = elem.getContext('2d');
 	if (!context) {
- 		return;
+		return;
 	}
 	sFactor *= 1.05;
 	context.save();
 	context.scale(sFactor, sFactor);
-	skullAndCrossSwords(context, sFactor);
+	draw.skullAndCrossSwords(context, sFactor);
 	context.restore();
 
 	deathj++;
 }
-
-var winTmr;
-var inWinFunc = false;
-var winJ = 0;
-function winFunc(){
-	if(inWinFunc)
+function deathFunc(){
+	if(inDeathFunc)
 		return;
-	inWinFunc = true;
+	inDeathFunc = true;
 	sFactor = 1.0;
-	tFactor = 0;
-	winj = 0;
+	deathj = 0;
 	clearInterval(drawTmr);
 	clearInterval(backgroundTmr);
 	clearInterval(AITmr);
-	winTmr = setInterval(drawWinFunc, 10);
+	currEvent = currEvent && currEvent.stop();
+	deathTmr = setInterval(drawDeathFunc, 10);
 }
 
 function drawWinFunc()
@@ -86,17 +100,17 @@ function drawWinFunc()
 	// Get the canvas 2d context.
 	var context = elem.getContext('2d');
 	if (!context) {
- 		return;
+		return;
 	}
-	clearBackground(context);
-	drawPP(context);
+	draw.clearBackground(context);
+	draw.drawPP(context);
 	context.save();	
 	context.save();
 	context.translate(-current[1].theCell.ppPos() - 1048, 0);
-	deck(context);
+	draw.deck(context);
 	context.restore();
 	context.translate(-current[1].theCell.ppPos(), 0);//translates 0 1048 to the left, 1 nowhere, and 2 1048 to the right, and all translated by ppPos
-	rightEdge(context);
+	draw.rightEdge(context);
 	if(winJ<=50){
 		tFactor += 5;
 	}
@@ -107,14 +121,25 @@ function drawWinFunc()
 	context.translate(0, tFactor);
 	context.scale(sFactor, sFactor);
 	context.save();
-	drawChest(context);
+	draw.drawChest(context);
 	context.restore();
 	context.restore();
 	context.restore();
 	winJ++;
 }
 
-PERFDEBUG = true;
+function winFunc(){
+	if(inWinFunc)
+		return;
+	inWinFunc = true;
+	sFactor = 1.0;
+	tFactor = 0;
+	winJ = 0;
+	clearInterval(drawTmr);
+	clearInterval(backgroundTmr);
+	clearInterval(AITmr);
+	winTmr = setInterval(drawWinFunc, 10);
+}
 
 function drawEvent(){
   if(PERFDEBUG)var initDrawTime = Date.now();
@@ -137,7 +162,7 @@ if(startScreen)
 	context.fillRect(0,0,1048,700);
 	context.save();
 	context.scale(2.0, 2.0);
-	skullAndCrossSwords(context, 2.0);
+	draw.skullAndCrossSwords(context, 2.0);
 	context.restore();
 
 /*		Opera has no draw text yet, so this won't be done
@@ -152,7 +177,7 @@ glColor3f(1,1,1);
 */
 }
 
-  clearBackground(context);
+  draw.clearBackground(context);
   if(PERFDEBUG)console.log("clearBackground: " + (Date.now() - startDrawTime));
   if(PERFDEBUG)startDrawTime = Date.now();
 
@@ -164,25 +189,25 @@ glColor3f(1,1,1);
 		context.translate(-current[1].theCell.ppPos() + 1048*( i-1 ), 0);//translates 0 1048 to the left, 1 nowhere, and 2 1048 to the right, and all translated by ppPos
 		var t1 = current[i];
 		var t2 = t1.theCell;
-		var t3 = t2.theType()
+		var t3 = t2.theType();
 		switch(current[i].theCell.theType()){
 			case 'l':
-				leftEdge(context);
+				draw.leftEdge(context);
 				break;
 			case 'd':
-				deck(context);
+				draw.deck(context);
 				break;
 			case 'r':
-				rightEdge(context);
+				draw.rightEdge(context);
 				break;
-			default:;
-		};
+			default:
+		}
 		if( current[i].theCell.hasMast() ){
-			mast(context);
+			draw.mast(context);
 		}		
 		if( current[i].theCell.hasChest() ){
 			context.save();
-			drawChest(context);
+			draw.drawChest(context);
 			context.restore();
 		}
 		context.restore();
@@ -190,11 +215,11 @@ if(PERFDEBUG)console.log("ship: " + (Date.now() - startDrawTime));
 if(PERFDEBUG)startDrawTime = Date.now();
 
 		
-		if(i == 1 && current[1].theCell.pp != null && !current[1].theCell.pp.isDead()){
+		if(i == 1 && current[1].theCell.pp !== null && !current[1].theCell.pp.isDead()){
 			context.save();
 			if(!current[1].theCell.pp.faceR())
 				reflect(context);
-			drawPP(context);
+			draw.drawPP(context);
 			context.restore();
 		}
   if(PERFDEBUG)console.log("drawPP: " + (Date.now() - startDrawTime));
@@ -211,7 +236,7 @@ if(PERFDEBUG)startDrawTime = Date.now();
 			context.translate(current[i].theCell.epPos(j), 0);
 			if(!current[i].theCell.eps[j].faceR() )
 				reflect(context);//has pirate face correct direction
-			drawEP(context,i,j);
+			draw.drawEP(context,i,j);
 			context.restore();
 		}
 		for(var x=0; x<toBury.length; x++)//x is much like crossbones, fitting for a pirate's burial
@@ -238,22 +263,19 @@ function proximity(cellNum, epNum){
 			distEdge = (2*SCREENENDX - (current[cellNum].theCell.epPos(epNum) + SCREENENDX ) );
 //			alert("0: "<<-(distEdge + (current[1].theCell.ppPos() + SCREENENDX) ));
 			return -(distEdge + (current[1].theCell.ppPos() + SCREENENDX) );//negative number to signify negative direction
-			break;
 		case 1:
 			distEdge = ( current[cellNum].theCell.epPos(epNum) + SCREENENDX) - ( current[1].theCell.ppPos() + SCREENENDX );
 			if(distEdge> 2*SCREENENDX)
 				alert("WOAH, messed up!!! " + distEdge);
 //			cout<<"1: "<< ( ( current[cellNum].theCell.epPos(epNum) + SCREENENDX) - ( current[1].theCell.ppPos() + SCREENENDX ) )<<endl;
 			return ( ( current[cellNum].theCell.epPos(epNum) + SCREENENDX) - ( current[1].theCell.ppPos() + SCREENENDX ) );//sign determines direction
-			break;
 		case 2:
 			distEdge = (current[cellNum].theCell.epPos(epNum) + SCREENENDX);
 //			cout<<"2: "<< (distEdge + (2*SCREENENDX - (current[1].theCell.ppPos() + SCREENENDX) ) )<<endl;
 
 			return (distEdge + (2*SCREENENDX - (current[1].theCell.ppPos() + SCREENENDX) ) );
-			break;
-		default:;
-	};
+		default:
+	}
 	return 0;
 }
 
@@ -261,28 +283,16 @@ function checkPPHit(cellNum, epNum){
 //precondition: pp is in current[1]
 //postcondition: if pp is hit, pp will be set to hit
 	var hitDist = proximity(cellNum, epNum);
-	if(current[cellNum].theCell.eps[epNum].faceR()){//if facing right
-		if( hitDist < 0 && hitDist >= -BODYWIDTH - 2*SWORDLENGTH/3){
-			if(	current[1].theCell.pp.isSwing() ){
-				current[1].theCell.pp.block();
-				current[cellNum].theCell.eps[epNum].block();
-			}
-			else{
-				current[1].theCell.pp.beHit();
-			}
-			return;//we only hit one pirate at a time
+	var isHit = current[cellNum].theCell.eps[epNum].faceR() ?
+			hitDist < 0 && hitDist >= -BODYWIDTH - 2*SWORDLENGTH/3 :
+			hitDist>0 && hitDist <= BODYWIDTH + 2*SWORDLENGTH/3;
+	if(isHit){
+		if(	current[1].theCell.pp.isSwing() ){
+			current[1].theCell.pp.block();
+			current[cellNum].theCell.eps[epNum].block();
 		}
-	}
-	else{//facing left
-		if( hitDist>0 && hitDist <= BODYWIDTH + 2*SWORDLENGTH/3){
-			if(	current[1].theCell.pp.isSwing() ){
-				current[1].theCell.pp.block();
-				current[cellNum].theCell.eps[epNum].block();
-			}
-			else{
-				current[1].theCell.pp.beHit();
-			}
-			return;//we only hit one pirate at a time
+		else{
+			current[1].theCell.pp.beHit();
 		}
 	}
 }
@@ -290,37 +300,25 @@ function checkPPHit(cellNum, epNum){
 function checkEPHit(){
 //precondition: pp is in current[1]
 //postcondition: if an ep is hit, that ep will be set to hit
-	if(current[1].theCell.pp.faceR()){
-		for(var i = 0; i<current[1].theCell.numEP(); i++){
+	var faceR = current[1].theCell.pp.faceR(),
+	otherCell = faceR?2:0,
+	test = faceR ?
+		function(cellNum, i) {
 			var distAway = proximity(1, i);
 			if( distAway>0 && distAway <= BODYWIDTH + 2*SWORDLENGTH/3){
 				current[1].theCell.eps[i].beHit();
-				return;//we only hit one pirate at a time
 			}
-		}
-		for(var i= 0; i<current[2].theCell.numEP(); i++){//checks any pirates who may have strayed from their cell
-			var distAway = proximity(2, i);
-			if( distAway>0 && distAway <= BODYWIDTH + 2*SWORDLENGTH/3){
-				current[2].theCell.eps[i].beHit();
-				return;//we only hit one pirate at a time
-			}
-		}
-	}
-	else{//facing left
-		for(var i = 0; i<current[1].theCell.numEP(); i++){
+		}:
+		function(cellNum, i) {
 			var distAway = proximity(1, i);
 			if( distAway<0 && distAway >= -BODYWIDTH - 2*SWORDLENGTH/3){
 				current[1].theCell.eps[i].beHit();
-				return;//we only hit one pirate at a time
 			}
-		}
-		for(var i= 0; i<current[0].theCell.numEP(); i++){//checks any pirates who may have strayed from their cell
-			var distAway = proximity(0, i);
-			if( distAway<0 && distAway >= -BODYWIDTH - 2*SWORDLENGTH/3){
-				current[0].theCell.eps[i].beHit();
-				return;//we only hit one pirate at a time
-			}
-		}
+		};
+	for(var i = 0; i<current[1].theCell.numEP(); i++){
+		if(test(1, i)) return;
+		if(test(otherCell,i)) return;
+		//we only hit one pirate at a time
 	}
 }
 
@@ -370,7 +368,7 @@ function moveLeft(){
 		current[1].id = current[0].id;
 		current[1].theCell = current[0].theCell;
 		current[1].theCell.setPP(SCREENENDX);//move pp to the far right side of the new cell
-		if(current[0].id == 0){
+		if(current[0].id === 0){
 			var temp = new cell('x');//we are unable to get into this cell, as we are stopped by the edge of the screen
 			current[0].theCell = temp;
 			current[0].id = -1;
@@ -399,9 +397,9 @@ function backGroundEvent(){
 		for(var j=0; j<current[i].theCell.numEP(); j++){
 			current[i].theCell.eps[j].continueAction();
 			if(	current[i].theCell.eps[j].isSwing() && current[i].theCell.eps[j].completeLevel()>=60 ){
-				if( (i == 1) ||/*in pp's cell*/ 
-					(i == 0 && current[0].theCell.eps[j].faceR() && current[0].theCell.epPos(j) + BODYWIDTH/2 + 2*SWORDLENGTH/3 > SCREENENDX)||/*swinging into pp's cell from left cell*/
-					(i == 2 && !current[2].theCell.eps[j].faceR() && current[2].theCell.epPos(j) - BODYWIDTH/2 - 2*SWORDLENGTH/3 < -SCREENENDX)){/*swinging into pp's cell from right cell*/
+				if( (i === 1) ||/*in pp's cell*/ 
+					(i === 0 && current[0].theCell.eps[j].faceR() && current[0].theCell.epPos(j) + BODYWIDTH/2 + 2*SWORDLENGTH/3 > SCREENENDX)||/*swinging into pp's cell from left cell*/
+					(i === 2 && !current[2].theCell.eps[j].faceR() && current[2].theCell.epPos(j) - BODYWIDTH/2 - 2*SWORDLENGTH/3 < -SCREENENDX)){/*swinging into pp's cell from right cell*/
 					checkPPHit(i, j);
 				}
 			}
@@ -423,7 +421,7 @@ function AIEvent(){
 			var distAway = proximity(cellNum, epNum);
 			var absDistAway = Math.abs(distAway);
 			if( absDistAway < 2*SWORDLENGTH ){
-				if( toSwing %4 ==0 ){
+				if( toSwing %4 === 0 ){
 					currCell.eps[epNum].swing();
 				}
 			}
@@ -432,16 +430,15 @@ function AIEvent(){
 				if(distAway<0){//is in negative direction
 					var toMove = true;
 					for(var i=0; i<numEps && toMove; i++){//quits early if toMove is changed
-						if(i==epNum)
+						if(i === epNum)
 							continue;
 						var epAway = proximity(cellNum, i);
 						if(distAway + ARMLENGTH >= epAway - BODYWIDTH/2 && distAway < epAway){
 							toMove = false;
 						}
-
 					}
 					for(var i=0; i<numEps && toMove; i++){//check both your cell and the middle cell, skips out early if 
-						if(i==epNum && cellNum ==1)
+						if(i === epNum && cellNum === 1)
 							break;//we have already tested 1 if this is the case
 						var epAway = proximity(1, i);
 						if(distAway + ARMLENGTH >= epAway - BODYWIDTH/2 && distAway<epAway){
@@ -454,14 +451,14 @@ function AIEvent(){
 				else{
 					var toMove = true;
 					for(var i=0; i<numEps; i++){
-						if(i==epNum)
+						if(i===epNum)
 							continue;
 						var epAway = proximity(cellNum, i);
 						if(distAway - ARMLENGTH <= epAway + BODYWIDTH/2 && distAway >epAway)
 							toMove = false;
 					}
 					for(var i=0; i<numEps && toMove; i++){//check both your cell and the middle cell, skips out early if 
-						if(i==epNum && cellNum ==1)
+						if(i===epNum && cellNum === 1)
 							break;//we have already tested 1 if this is the case
 						var epAway = proximity(1, i);
 						if(distAway - ARMLENGTH <= epAway + BODYWIDTH/2 && distAway >epAway)
@@ -484,7 +481,7 @@ function createWorld(){
 	{
 		world[i] = new cell();
 		world[i].changeType('d');
-		if( (i-1)%3 == 0)
+		if( (i-1)%3 === 0)
 			world[i].addObj('m');
 	}
 	world[0].changeType('l');
@@ -500,17 +497,13 @@ function createWorld(){
 	}
 	for(var i= 0; i<numCells; i++){
 		for(var j= 0; j<world[i].numEP(); j++){
-			if(j%2 ==0)
+			if(j%2 === 0)
 				world[i].setEP(j, -SCREENENDX + 3*BODYWIDTH/2*j);
 			else
 				world[i].setEP(j, SCREENENDX - 3*BODYWIDTH/2*j);
 		}
 	}
 }
-
-var backgroundTmr;
-var drawTmr;
-var AITmr;
 
 function recurringEvent(repeat) {
 	var timer;
@@ -524,8 +517,6 @@ function recurringEvent(repeat) {
 		}
 	};
 }
-
-var currEvent = null;
 
 function keyDown(e){
 //precondition: current[1] contains pp
@@ -546,12 +537,12 @@ function keyDown(e){
 			break;
 		case 32:
 		case 115:
-			currEvent = recurringEvent(function(){current[1].theCell.pp.swing()});
+			currEvent = recurringEvent(function(){current[1].theCell.pp.swing();});
 			currEvent.start();
 			break;
 		default:
 			currEvent = currEvent && currEvent.stop();			
-	};	
+	}
 }
 
 function keyUp(){
@@ -570,7 +561,7 @@ function touchDown(e){
 		currEvent.start();
 	}
 	else if(e.touches.length === 2) {
-		currEvent = recurringEvent(function(){current[1].theCell.pp.swing()});
+		currEvent = recurringEvent(function(){current[1].theCell.pp.swing();});
 		currEvent.start();
 	}
 	e.preventDefault();
@@ -633,11 +624,11 @@ window.addEventListener('load', function () {
 	current[2] = temp;
 	(function drawAndWait() {
 		drawEvent();
-		setTimeout(drawAndWait, DRAWTIME);
+		drawTmr = setTimeout(drawAndWait, DRAWTIME);
 	}());
-	backgrounfTmr = setInterval(backGroundEvent, WAITTIME);
+	backgroundTmr = setInterval(backGroundEvent, WAITTIME);
 	AITmr = setInterval(AIEvent, AITIME);
-
+	window.scrollTo(0,700);
 
 }, false);
 

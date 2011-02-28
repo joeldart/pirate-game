@@ -1,79 +1,40 @@
-var WAITTIME = 20;
-var AITIME = 20;//120;
-var DRAWTIME = 10;//60;
-var RECURTIME = 30;
-
-var DECKHEIGHT = -250.0;
-var SCREENENDX = 524;
-var SCREENENDY = 350;
-
-var PHEIGHT = 200;//pirate height
-var HEADWIDTH = 50;//width of the pirate's head
-
-var PSHOULDER = 150;//distance to top of the shoulder from deck
-var BODYWIDTH = 70;
-var BODYLENGTH = 90;
-
-var ARMLENGTH = 90;
-var ARMWIDTH = 20;
-
-var LEGLENGTH = 100;//some length will be covered by body
-var LEGWIDTH = 26;
-
-var SWORDLENGTH = 130;
-var SWORDWIDTH = 26;
-
-var CHESTHEIGHT = 100.0;
-var CHESTWIDTH = 200.0;
-
-function reflect(context)
-{
+function reflect(context){
 	context.transform(-1, 0, 0, 1, 0, 0);
 }
-
-function invert(context)
-{
+function invert(context){
 	context.transform(1, 0, 0, -1, 0, 0);
 }
 
+window.draw = (function(){
 function gold(context){
 	context.fillStyle = "rgb(185, 126, 2)";
 }
-
 function goldShine(context){
 	context.fillStyle = "rgb(252, 202, 99)";
 }
-
 function epCoatColor(context){
 	context.fillStyle = "rgb(51,51,51)";
 }
-
 function metal(context){
 	context.fillStyle = "rgb(153,153,153)";
 }
-
 function pirateSkin(context){
 //this sets the skin tone of our pirate
 context.fillStyle = "rgb(242, 186, 130)";
 }
-
 function darkRed(context){
 	context.fillStyle = "rgb(148, 40, 29)";
 }
-
 function deepPurple(context){
 	context.fillStyle = "rgb(43, 22, 124)";
 }
-
 function ppCoatColor(context){
 	context.fillStyle = "rgb(186, 15, 48)";//pp's coat's color... a dark maroon, I think
 }
-
 function shipBrown(context){
 //this changes the color to the brown that is the color of the ship
 	context.fillStyle = "rgb(127, 63, 0)";
 }
-
 function darkBrown(context){
 	context.fillStyle = "rgb(63, 31, 0)";
 }
@@ -83,9 +44,7 @@ function pearlColor(context){
 function jewelColor(context){
 	context.fillStyle = "rgb(17, 11, 147)";
 }
-
-function sword(context)
-{
+function sword(context){
 	metal(context);
 	//hilt
 	context.beginPath();
@@ -116,7 +75,6 @@ function sword(context)
 		context.lineTo( 10, ARMWIDTH/2);
 	context.stroke();
 }
-
 function skullFace(context, x){
 	var halfWidth = HEADWIDTH/2;
 	var thirdWidth = HEADWIDTH/3;
@@ -177,7 +135,6 @@ function skullFace(context, x){
 	context.stroke();
 
 }
-
 function skullAndCrossSwords(context, x){
 	context.translate(0, -50);
 	context.save();
@@ -196,7 +153,6 @@ function skullAndCrossSwords(context, x){
 	skullFace(context,x);
 	context.restore();
 }
-
 function boot(context){
     darkBrown(context);
 	context.beginPath();//draws the botton part of the boot
@@ -221,7 +177,6 @@ function boot(context){
 		context.lineTo( LEGWIDTH/2+5, -LEGLENGTH + LEGLENGTH/4);
 	context.fill();
 }
-
 function leg(context){
 //all pirates wear the same pants, so we draw all legs the same way
 //this routine draws a leg for a pirate in the middle of the screen
@@ -241,7 +196,6 @@ function leg(context){
 	context.fill();
 	boot(context);
 }
-
 function jewel(context){
 	jewelColor(context);
 	context.save();
@@ -257,7 +211,6 @@ function jewel(context){
 		pointSize= 3.5;
 	context.fillRect(2, 2, pointSize, pointSize);
 }
-
 function coin(context){
 //this draws a coin that is found in the treasure chest
 	if(shimmer%20 <16)
@@ -289,7 +242,6 @@ function coin(context){
 	}
 	drawPoint(context,0, -4, pointSize);
 }		
-
 function aPearl(context){
 	pearlColor(context);
 	var pointSize = 5;
@@ -303,7 +255,6 @@ function aPearl(context){
 	drawPoint(context,-2, -1, pointSize);
 	drawPoint(context,2, -1, pointSize);	
 }
-
 function pearls(context){
 //this makes pearls to hang down from the chest
 	context.save();
@@ -327,9 +278,7 @@ function pearls(context){
 	}
 	context.restore();
 }
-
-function drawPoint(context, x, y, size)
-{
+function drawPoint(context, x, y, size){
 	if(size == 1)
 	{
 		context.fillRect(x,y,size,size);
@@ -340,7 +289,6 @@ function drawPoint(context, x, y, size)
 		context.fill();
 	}
 }
-
 function ppHead(context){
 	pirateSkin(context);
 	var halfWidth = HEADWIDTH/2;
@@ -427,7 +375,6 @@ function ppHead(context){
 	//pupil
 	drawPoint(context, halfWidth-2, PHEIGHT - thirdWidth, 2);
 }
-
 function ppCoat(context){
 //draws the PP's coat
 	ppCoatColor(context);	
@@ -443,7 +390,6 @@ function ppCoat(context){
 		context.lineTo(.5*halfWidth, PSHOULDER);
 	context.fill();
 }
-
 function arm(context){
 	context.beginPath();
 		context.moveTo(-ARMWIDTH, 0);
@@ -480,18 +426,14 @@ function arm(context){
 	context.fillRect(-ARMWIDTH, -ARMLENGTH, ARMWIDTH, ARMWIDTH);
 		
 }
-
 function ppArm(context){
 	ppCoatColor(context);
 	arm(context);
 }
-
-
 function epArm(context){
 	epCoatColor(context);
 	arm(context);
 }
-
 function epHead(context){
 	pirateSkin(context);
 	var halfWidth = HEADWIDTH/2;
@@ -555,8 +497,6 @@ function epHead(context){
 	//pupil
 		drawPoint(context, halfWidth-2, PHEIGHT - thirdWidth, pointSize);
 }
-
-
 function epCoat(context){
 //draws the PP's coat
 	epCoatColor(context);	
@@ -572,7 +512,6 @@ function epCoat(context){
 		context.lineTo(.5*halfWidth, PSHOULDER);
 	context.fill();
 }
-
 function drawEP(context, cellNum, place){
 //precondition: current[cellNum] has an ep in place
 //postcondition: draws EP at 0 to buffer
@@ -618,7 +557,6 @@ function drawEP(context, cellNum, place){
 	epArm(context);
 	context.restore();
 }
-
 function drawChest(context){
 //this function got a little clumsy with the stack, so I eventually 
 //gave up and hacked it a bit.  The wires are hanging out, but it works
@@ -685,7 +623,6 @@ function drawChest(context){
 	context.restore();
 
 }
-
 function deck(context){
 //this routine draws just a regular deck
 	context.save();
@@ -719,7 +656,6 @@ function deck(context){
 	}
 	context.restore();
 }
-
 function leftEdge(context){
 //this routine draws the left edge of the ship
 	shipBrown(context);
@@ -730,7 +666,6 @@ function leftEdge(context){
 		context.lineTo(-24, DECKHEIGHT);
 	context.fill();
 }
-
 function rightEdge(context){
 //this routine draws the right edge of the ship
 	shipBrown(context);
@@ -773,7 +708,6 @@ function rightEdge(context){
 	context.restore();
 
 }
-
 function mast(context){
 //this routine draws a mast in the middle of the screen
 	shipBrown(context);
@@ -817,7 +751,6 @@ function mast(context){
 		context.lineTo(-14, -SCREENENDY + 350);
 	context.stroke();
 }
-
 /*drawPP area*/
 function drawPPFace(context) {
 	pirateSkin(context);
@@ -847,7 +780,6 @@ function drawPPArm(context){
 	ppArm(context);
 }
 /*end drawPP area*/
-
 function drawPP(context){
 //precondition: current has a pp
 //postcondition: pp is drawn to the buffer
@@ -909,7 +841,6 @@ function drawPP(context){
 	context.restore();
   if(PERFDEBUG)console.log("drawArm: " + (Date.now() - startDrawTime));
 }
-
 function skull(context){
 //draws skull for skeleton
 	var halfWidth = HEADWIDTH/2;
@@ -963,8 +894,6 @@ function skull(context){
 		context.lineTo( 3*halfWidth/4,  -halfWidth/2);
 	context.stroke();
 }
-
-
 function spine(context){
 //draws the spine
 	context.save();
@@ -976,7 +905,6 @@ function spine(context){
 	}
 	context.restore();
 }
-
 function ribs(context){
 	context.fillStyle="rgb(255,255,255)";
 	context.save();
@@ -1007,7 +935,6 @@ function boneArm(context){
 	context.restore();
 	context.restore();
 }
-
 function skeleton(context){
 //draws the skeleton that hangs off the front of the ship
 	context.save();
@@ -1018,9 +945,7 @@ function skeleton(context){
 	ribs(context);
 	boneArm(context);
 }
-
-function clearBackground(context)
-{
+function clearBackground(context){
 	context.fillStyle = "rgb(0,0,255)";
 	//draw rectangle
 
@@ -1031,3 +956,18 @@ function clearBackground(context)
 //	context.fillRect(-524*3,-350,1048*3,1000*3);
 	//as you've probably figured out, this is not an exact number and any help on how to figure out what my true number should be would be greatly appreciated.  
 }
+
+return {
+	clearBackground: clearBackground,
+	skeleton: skeleton,
+	drawPP: drawPP,
+	mast: mast,
+	rightEdge: rightEdge,
+	leftEdge: leftEdge,
+	deck: deck,
+	drawChest: drawChest,
+	drawEP: drawEP,
+	skullAndCrossSwords: skullAndCrossSwords
+};
+
+}());
