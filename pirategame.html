@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>Canvas Primer - Example: Using canvas</title>
+    <title>Pirate Game</title>
 	<script type="text/javascript">
 		// Function.prototype.bind polyfill
 		if ( !Function.prototype.bind ) {
@@ -28,8 +28,8 @@
     <script type="text/javascript"><!--
 (function(){
 var WAITTIME = 20;
-var AITIME = 120;
-var DRAWTIME = 60;
+var AITIME = 20;//120;
+var DRAWTIME = 10;//60;
 var RECURTIME = 30;
 
 var DECKHEIGHT = -250.0;
@@ -764,7 +764,7 @@ function drawEP(context, cellNum, place){
 	context.restore();
 }
 
-var current = new Array();
+var current = [];
 
 function pirate(typeChar)
 {
@@ -1129,7 +1129,7 @@ function cell(typeChar)
 {
 	this.type = typeChar;
 	this.pp = null;
-	this.eps = new Array();
+	this.eps = [];
 	this.objects = new Array();
 	this.changeType = function(x){
 		this.type = x;
@@ -1187,6 +1187,36 @@ function loadStruct(){
 	this.theCell = new cell();
 }
 
+/*drawPP area*/
+function drawPPFace(context) {
+	pirateSkin(context);
+	context.fillRect(-10, PSHOULDER - 10, 20, 20); 
+}
+function drawPPLeg(context){
+	leg(context);	
+}
+function drawPPCoat(context){
+	ppCoat(context);
+}
+function drawPPHead(context){
+	if(!drawPPHead.cached)
+	{
+		var tempCan = document.createElement("CANVAS"),
+			tempContext = tempCan.getContext('2d');
+		tempCan.width = HEADWIDTH*3;
+		tempCan.height = PHEIGHT+PSHOULDER;
+		tempContext.translate(HEADWIDTH*3/2, 0);
+		ppHead(tempContext);
+		drawPPHead.cached = document.createElement("IMG");
+		drawPPHead.cached.src = tempCan.toDataURL();
+	}
+	context.drawImage(drawPPHead.cached, 0,0);
+}
+function drawPPArm(context){
+	ppArm(context);
+}
+/*end drawPP area*/
+
 function drawPP(context){
 //precondition: current has a pp
 //postcondition: pp is drawn to the buffer
@@ -1195,42 +1225,41 @@ function drawPP(context){
 //the topmost shapes drawn last
 //draw the neck
 	context.save();
-	pirateSkin(context);
 	context.translate(0, DECKHEIGHT);
 	context.rotate(current[1].theCell.pp.bodyAngle());
-	context.fillRect(-10, PSHOULDER - 10, 20, 20); 
+	drawPPFace(context);
 	context.restore();
 //draw the legs
 	context.save();
 	context.translate(0, DECKHEIGHT + LEGLENGTH);
 	context.rotate( current[1].theCell.pp.rLeg());
 	context.rotate(current[1].theCell.pp.bodyAngle() );//will only change on hit
-	leg(context);
+	drawPPLeg(context);
 	context.restore();
 	context.save();
 	context.translate(0, DECKHEIGHT + LEGLENGTH);
 	context.rotate( current[1].theCell.pp.lLeg());
 	context.rotate(current[1].theCell.pp.bodyAngle() );//will only change on hit
-	leg(context);
+	drawPPLeg(context);
 	context.restore();
 //draw the body
 	context.save();
 	context.translate(0, DECKHEIGHT);
 	context.rotate(current[1].theCell.pp.bodyAngle() );//will only change on hit
-	ppCoat(context);
+	drawPPCoat(context);
 	context.restore();
 //draw the head
 	context.save();
 	context.translate(0, DECKHEIGHT);
 	context.rotate(current[1].theCell.pp.bodyAngle() );//will only change on hit
-	ppHead(context);
+	drawPPHead(context);
 	context.restore();
 //draw the arm
 	context.save();
 	context.translate(-HEADWIDTH/4, DECKHEIGHT + PSHOULDER);
 	context.rotate(current[1].theCell.pp.armLevel() );
 	context.rotate(current[1].theCell.pp.bodyAngle()  );//will only change on hit
-	ppArm(context);
+	drawPPArm(context);
 	context.restore();
 }
 
@@ -1345,13 +1374,21 @@ function skeleton(context){
 
 function clearBackground(context)
 {
-	//draw background
 	context.fillStyle = "rgb(0,0,255)";
-	context.fillRect(-524*3,-350,1048*3,1000*3);
+	//draw rectangle
+
+	//draw background
+	//context.fillRect(0,0,1048,700);
+//context.fillRect(-524, -350, 1048, 700);
+	context.fillRect(-524,-350,1048,700);
+//	context.fillRect(-524*3,-350,1048*3,1000*3);
 	//as you've probably figured out, this is not an exact number and any help on how to figure out what my true number should be would be greatly appreciated.  
 }
 
+PERFDEBUG = true;
+
 function drawEvent(){
+  if(PERFDEBUG)var initDrawTime = Date.now();
   var elem = document.getElementById('myCanvas');
   if (!elem || !elem.getContext) {
     return;
@@ -1362,6 +1399,8 @@ function drawEvent(){
   if (!context) {
     return;
   }
+  if(PERFDEBUG)console.log("getcontext: " + (Date.now() - initDrawTime));
+  if(PERFDEBUG)var startDrawTime = Date.now();
 
 if(startScreen)
 {
@@ -1385,8 +1424,13 @@ glColor3f(1,1,1);
 }
 
 	clearBackground(context);
+  if(PERFDEBUG)console.log("clearBackground: " + (Date.now() - startDrawTime));
+  if(PERFDEBUG)startDrawTime = Date.now();
 
 	for(var i=0; i<3; i++){
+  if(PERFDEBUG)console.log("since last loop: " + (Date.now() - startDrawTime));
+  if(PERFDEBUG)startDrawTime = Date.now();
+
 		context.save();
 		context.translate(-current[1].theCell.ppPos() + 1048*( i-1 ), 0);//translates 0 1048 to the left, 1 nowhere, and 2 1048 to the right, and all translated by ppPos
 		var t1 = current[i];
@@ -1413,15 +1457,21 @@ glColor3f(1,1,1);
 			context.restore();
 		}
 		context.restore();
-		if(current[1].theCell.pp != null && !current[1].theCell.pp.isDead()){
+if(PERFDEBUG)console.log("ship: " + (Date.now() - startDrawTime));
+if(PERFDEBUG)startDrawTime = Date.now();
+
+		
+		if(i == 1 && current[1].theCell.pp != null && !current[1].theCell.pp.isDead()){
 			context.save();
 			if(!current[1].theCell.pp.faceR())
 				reflect(context);
 			drawPP(context);
 			context.restore();
 		}
+  if(PERFDEBUG)console.log("drawPP: " + (Date.now() - startDrawTime));
+  if(PERFDEBUG)startDrawTime = Date.now();
 
-		var toBury = new Array();
+		var toBury = [];
 		for(var j=0; j<current[i].theCell.numEP(); j++){
 			if(current[i].theCell.eps[j].isDead()){
 				toBury.push(j);//remove pirate from cell
@@ -1437,11 +1487,15 @@ glColor3f(1,1,1);
 		}
 		for(var x=0; x<toBury.length; x++)//x is much like crossbones, fitting for a pirate's burial
 			current[i].theCell.eps.splice(toBury[x],1);
+			
+  if(PERFDEBUG)console.log("drawEPs: " + (Date.now() - startDrawTime));
+  if(PERFDEBUG)startDrawTime = Date.now();
+
 	}
 //not needed for canvas
 //	glFlush();
 //	glutSwapBuffers();
-
+  if(PERFDEBUG)console.log("drawTime: " + (Date.now() - initDrawTime));
 }
 
 function proximity(cellNum, epNum){
@@ -1630,6 +1684,7 @@ function backGroundEvent(){
 }
 
 function AIEvent(){
+  if(PERFDEBUG)var initDrawTime = Date.now();
 	if(current[1].theCell.pp.isDead() ){
 		alert("Garr!!! Yer lost to Davey Jones!!!");
 	}
@@ -1690,6 +1745,7 @@ function AIEvent(){
 		}
 	}
 	toSwing++;
+	  if(PERFDEBUG)console.log("ai event:" + (Date.now() - initDrawTime));
 }
 
 function createWorld(){
