@@ -1224,11 +1224,15 @@ function drawPP(context){
 //some shapes will be partially covered, so these are drawn first with
 //the topmost shapes drawn last
 //draw the neck
+  if(PERFDEBUG)var startDrawTime = Date.now();
 	context.save();
 	context.translate(0, DECKHEIGHT);
 	context.rotate(current[1].theCell.pp.bodyAngle());
 	drawPPFace(context);
 	context.restore();
+  if(PERFDEBUG)console.log("drawPPFace: " + (Date.now() - startDrawTime));
+  if(PERFDEBUG)startDrawTime = Date.now();
+
 //draw the legs
 	context.save();
 	context.translate(0, DECKHEIGHT + LEGLENGTH);
@@ -1236,24 +1240,35 @@ function drawPP(context){
 	context.rotate(current[1].theCell.pp.bodyAngle() );//will only change on hit
 	drawPPLeg(context);
 	context.restore();
+  if(PERFDEBUG)console.log("drawLeg: " + (Date.now() - startDrawTime));
+  if(PERFDEBUG)startDrawTime = Date.now();
 	context.save();
 	context.translate(0, DECKHEIGHT + LEGLENGTH);
 	context.rotate( current[1].theCell.pp.lLeg());
 	context.rotate(current[1].theCell.pp.bodyAngle() );//will only change on hit
 	drawPPLeg(context);
 	context.restore();
-//draw the body
+  if(PERFDEBUG)console.log("drawOtherLeg: " + (Date.now() - startDrawTime));
+  if(PERFDEBUG)startDrawTime = Date.now();
+	//draw the body
 	context.save();
 	context.translate(0, DECKHEIGHT);
 	context.rotate(current[1].theCell.pp.bodyAngle() );//will only change on hit
 	drawPPCoat(context);
 	context.restore();
+  if(PERFDEBUG)console.log("drawcoat: " + (Date.now() - startDrawTime));
+  if(PERFDEBUG)startDrawTime = Date.now();
 //draw the head
 	context.save();
 	context.translate(0, DECKHEIGHT);
 	context.rotate(current[1].theCell.pp.bodyAngle() );//will only change on hit
-	drawPPHead(context);
+		context.save();
+		context.translate(-3/2*HEADWIDTH,0);
+		drawPPHead(context);
+		context.restore();
 	context.restore();
+  if(PERFDEBUG)console.log("drawHead: " + (Date.now() - startDrawTime));
+  if(PERFDEBUG)startDrawTime = Date.now();
 //draw the arm
 	context.save();
 	context.translate(-HEADWIDTH/4, DECKHEIGHT + PSHOULDER);
@@ -1261,6 +1276,7 @@ function drawPP(context){
 	context.rotate(current[1].theCell.pp.bodyAngle()  );//will only change on hit
 	drawPPArm(context);
 	context.restore();
+  if(PERFDEBUG)console.log("drawArm: " + (Date.now() - startDrawTime));
 }
 
 function skull(context){
