@@ -7,3 +7,4 @@ On the infinite time list was to rewrite it and optimize for performance on ios.
 unplayably slow on ios which had just gotten canvas support. I had planned for some memoization 
 and other tricks but got distracted by something else shiny and dropped it. 
 
+http://joeldart.github.io/pirate-game/pirategame.html note that it starts out with a popup because at the time opera (the browser i loved at the time) hadn't implemented drawing text in canvas.
